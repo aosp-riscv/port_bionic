@@ -1,0 +1,3 @@
+[submodule "external/jemalloc_new"]
+	path = external/jemalloc_new
+	url = https://github.com/aosp-riscv/external_jemalloc_new.git
