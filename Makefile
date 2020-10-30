@@ -1,117 +1,154 @@
-RELPWD = PWD=/proc/self/cwd
-CC = ../../llvm-project/install/bin/clang
-CPP = ../../llvm-project/install/bin/clang++
+OUTPUT_DIR = out
 
-################################
-# common global
-################################
+all : env_setup \
+	libc_static
 
-# default
-CFLAGS_COMMON_GLOBAL = -DANDROID -fmessage-length=0 -W -Wall -Wno-unused -Winit-self -Wpointer-arith -no-canonical-prefixes -DNDEBUG -UDEBUG -fno-exceptions -Wno-multichar -O2 -g -fno-strict-aliasing
+libc_bionic:
+	@echo "Building $@ ..."
+	make -f build/libc_bionic.mk
+	@echo "Building $@ DONE!"
 
-# if we build on linux
-CFLAGS_COMMON_GLOBAL += -fdebug-prefix-map=/proc/self/cwd=
+libc_bionic_ndk:
+	@echo "Building $@ ..."
+	make -f build/libc_bionic_ndk.mk
+	@echo "Building $@ DONE!"
 
-# compile flags for clang extra (ClangExtraCflags)
-CFLAGS_COMMON_GLOBAL += -D__compiler_offsetof=__builtin_offsetof -faddrsig -Wimplicit-fallthrough -Werror=int-conversion -Wno-reserved-id-macro -Wno-format-pedantic -Wno-unused-command-line-argument -fcolor-diagnostics -Wno-zero-as-null-pointer-constant -Wno-sign-compare -Wno-defaulted-function-deleted -Wno-inconsistent-missing-override
+libc_openbsd:
+	@echo "Building $@ ..."
+	make -f build/libc_openbsd.mk
+	@echo "Building $@ DONE!"
 
-# for device (deviceGlobalCflags)
-CFLAGS_COMMON_GLOBAL += -ffunction-sections -fdata-sections -fno-short-enums -funwind-tables -fstack-protector-strong -Wa,--noexecstack -D_FORTIFY_SOURCE=2 -Wstrict-aliasing=2 -Werror=return-type -Werror=non-virtual-dtor -Werror=address -Werror=sequence-point -Werror=date-time -Werror=format-security
+libc_dns:
+	@echo "Building $@ ..."
+	make -f build/libc_dns.mk
+	@echo "Building $@ DONE!"
 
-# for clang extra on target (ClangExtraTargetCflags)
-CFLAGS_COMMON_GLOBAL += -nostdlibinc
+libc_freebsd:
+	@echo "Building $@ ..."
+	make -f build/libc_freebsd.mk
+	@echo "Building $@ DONE!"
 
+libc_gdtoa:
+	@echo "Building $@ ..."
+	make -f build/libc_gdtoa.mk
+	@echo "Building $@ DONE!"
 
-CPPFLAGS_COMMON_GLOBAL = $(CFLAGS_COMMON_GLOBAL) \
-			-Wsign-promo \
-			-D_LIBCPP_ENABLE_THREAD_SAFETY_ANNOTATIONS -Wno-thread-safety-negative -Wno-gnu-include-next \
-			-fvisibility-inlines-hidden
-
-# include dirs
-INC_COMMON_GLOBAL = -Isystem/core/include -Isystem/media/audio/include -Ihardware/libhardware/include -Ihardware/libhardware_legacy/include -Ihardware/ril/include -Iframeworks/native/include -Iframeworks/native/opengl/include -Iframeworks/av/include
-
-################################
-# libc level
-################################
-# default for libc
-CFLAGS_LIBC = -D_LIBC=1 -D__BIONIC_LP32_USE_STAT64 -Wall -Wextra -Wunused -Wno-char-subscripts -Wno-deprecated-declarations -Wno-gcc-compat -Wframe-larger-than=2048 -Wimplicit-fallthrough -Werror=pointer-to-int-cast -Werror=int-to-pointer-cast -Werror=type-limits -Werror -Wexit-time-destructors
-
-# target arch
-CFLAGS_LIBC += -isystem bionic/libc/include -isystem bionic/libc/kernel/uapi -isystem bionic/libc/kernel/uapi/asm-x86 -isystem bionic/libc/kernel/android/scsi -isystem bionic/libc/kernel/android/uapi
-
-# CommonNativehelperInclude
-CFLAGS_LIBC += -Ilibnativehelper/include_jni
-
-# default include dirs
-INC_LIBC = -Ibionic/libc/async_safe/include -Iexternal/jemalloc_new/include 
-INC_LIBC += -Ibionic/libc
+libc_netbsd:
+	@echo "Building $@ ..."
+	make -f build/libc_netbsd.mk
+	@echo "Building $@ DONE!"
 
 
-###################################
-# Compiler related
-# target, Should be changed for RISC-V
-CFLAGS_COMPILER = -target riscv64-unknown-linux-gnu
-# gcc prefix, Should be changed for RISC-V
-CFLAGS_COMPILER += -B/opt/riscv64/bin
+libc_openbsd_ndk:
+	@echo "Building $@ ..."
+	make -f build/libc_openbsd_ndk.mk
+	@echo "Building $@ DONE!"
 
-CFLAGS_COMPILER += -DANDROID_STRICT 
-CFLAGS_COMPILER += -fPIC
+libc_freebsd_large_stack:
+	@echo "Building $@ ..."
+	make -f build/libc_freebsd_large_stack.mk
+	@echo "Building $@ DONE!"
 
-# target level, Should be changed for RISC-V
-#CFLAGS_COMPILER += -msse3 -mstackrealign
-#CFLAGS_COMPILER += -m32 -march=prescott
+libc_openbsd_large_stack:
+	@echo "Building $@ ..."
+	make -f build/libc_openbsd_large_stack.mk
+	@echo "Building $@ DONE!"
 
-# NoOverrideClangGlobalCflags
-CFLAGS_COMPILER += -Werror=int-to-pointer-cast -Werror=pointer-to-int-cast
-CFLAGS_COMPILER += -Werror=address-of-temporary -Werror=return-type -Wno-tautological-constant-compare -Wno-tautological-type-limit-compare -Wno-tautological-unsigned-enum-zero-compare -Wno-tautological-unsigned-zero-compare -Wno-c++98-compat-extra-semi -Wno-return-std-move-in-c++11
+libc_stack_protector:
+	@echo "Building $@ ..."
+	make -f build/libc_stack_protector.mk
+	@echo "Building $@ DONE!"
 
+libc_tzcode:
+	@echo "Building $@ ..."
+	make -f build/libc_tzcode.mk
+	@echo "Building $@ DONE!"
 
-CPPFLAGS_COMPILER = $(CFLAGS_COMPILER)
+libc_fortify:
+	@echo "Building $@ ..."
+	make -f build/libc_fortify.mk
+	@echo "Building $@ DONE!"
 
-CFLAGS_COMPILER += -std=gnu99
+libc_malloc:
+	@echo "Building $@ ..."
+	make -f build/libc_malloc.mk
+	@echo "Building $@ DONE!"
 
-CPPFLAGS_COMPILER += -std=gnu++17 -fno-rtti
+#$(RELPWD) $(CC) $(AFLAGS_LIBC_SYSCALLS) -MD -MF $(OUTPUT_DIR)/writev.o.d -o $(OUTPUT_DIR)/writev.o $(SRCPATH_LIBC)/arch-riscv64/syscalls/writev.S
+# syscall ASM files failed to pass build:
+# bionic/libc/arch-riscv64/syscalls/writev.S:5:31: error: expected absolute expression in directive
+# .text; .globl writev; .balign __bionic_asm_align; .type writev, @function; writev: ; .cfi_startproc
+libc_syscalls:
+	@echo "Building $@ ..."
+	make -f build/libc_syscalls.mk
+	@echo "Building $@ DONE!"
 
-#########################################
-# constrct cflags for libc_gdtoa
+libstdcpp:
+	@echo "Building $@ ..."
+	make -f build/libstdcpp.mk
+	@echo "Building $@ DONE!"
 
-# gotoa level cflags
-CFLAGS_LIBC_GDTOA = -Wno-sign-compare -include openbsd-compat.h
+# TBD:
+# libc_bionic_ndk has depenedency on libsystemproperties
+libc_nopthread: \
+		libc_bionic \
+		libc_bionic_ndk \
+		libc_dns \
+		libc_fortify \
+        libc_freebsd \
+        libc_freebsd_large_stack \
+        libc_gdtoa \
+        libc_malloc \
+        libc_netbsd \
+        libc_openbsd \
+        libc_openbsd_large_stack \
+        libc_openbsd_ndk \
+        libc_stack_protector \
+        libc_syscalls \
+        libc_tzcode \
+        libstdcpp
+	@echo "Building $@ ..."
+	make -f build/libc_nopthread.mk
+	@echo "Building $@ DONE!"
 
-INC_LIBC_GDTOA = -Ibionic/libc/private -Ibionic/libc/upstream-openbsd/android/include -Ibionic/libc/upstream-openbsd/lib/libc/include
-INC_LIBC_GDTOA += $(CFLAGS_INC_LIBC_DEFAULT)
+libc_pthread:
+	@echo "Building $@ ..."
+	make -f build/libc_pthread.mk
+	@echo "Building $@ DONE!"
 
-CFLAGS = -c
-CFLAGS += $(CFLAGS_COMMON_GLOBAL) $(INC_COMMON_GLOBAL) \
-          $(CFLAGS_LIBC) $(INC_LIBC) \
-          $(CFLAGS_LIBC_GDTOA) $(INC_LIBC_GDTOA) \
-          $(CFLAGS_COMPILER)
+libc_common: libc_nopthread libc_pthread
 
-CPPFLAGS = -c
-CPPFLAGS += $(CPPFLAGS_COMMON_GLOBAL) $(INC_COMMON_GLOBAL) \
-            $(CFLAGS_LIBC) $(INC_LIBC) \
-            $(CFLAGS_LIBC_GDTOA) $(INC_LIBC_GDTOA) \
-            $(CPPFLAGS_COMPILER)
+libc_common_static: libc_common
 
-OUT_C = dmisc.o
-IN_C = bionic/libc/upstream-openbsd/lib/libc/gdtoa/dmisc.c
+libc_init_static:
+	@echo "Building $@ ..."
+	make -f build/libc_init_static.mk
+	@echo "Building $@ DONE!"
 
-OUT_CPP = gdtoa_support.o
-IN_CPP = bionic/libc/upstream-openbsd/android/gdtoa_support.cpp
+libc_static: libc_init_static libc_common_static
+	@echo "Building $@ ..."
+	make -f build/libc_static.mk
+	@echo "Building $@ DONE!"
 
-all : 
-	echo "Build begin ..."
-	
-	$(RELPWD) $(CC) $(CFLAGS) -MD -MF $(OUT_C).d -o $(OUT_C) $(IN_C)
-	$(RELPWD) $(CPP) $(CPPFLAGS) -MD -MF $(OUT_CPP).d -o $(OUT_CPP) $(IN_CPP)
-	
-	echo "Build end."
+crtbegin_static:
+	@echo "Building $@ ..."
+	make -f build/crtbegin_static.mk
+	@echo "Building $@ DONE!"
+
+crtend:
+	@echo "Building $@ ..."
+	make -f build/crtend.mk
+	@echo "Building $@ DONE!"
 
 .PHONY : clean
 clean :
 	@echo "Begin clean ......................."
-	$(RM) *.d *.o
+	$(RM) -rf $(OUTPUT_DIR)
 	@echo "Done, clean ALL successfully!"
 
+.PHONY : env_setup
+env_setup: clean
+	@mkdir -p $(OUTPUT_DIR)
+	@echo "Created output dir."
 
 
