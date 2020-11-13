@@ -177,7 +177,7 @@ SRCS_CPP_1 = \
 	bionic/sys_shm.cpp \
 	bionic/sys_signalfd.cpp \
 	bionic/sys_time.cpp \
-	bionic/sysinfo.cpp \
+	bionic/sysinfo2.cpp \
 	bionic/syslog.cpp \
 	bionic/system.cpp \
 	bionic/system_property_api.cpp \
@@ -197,15 +197,7 @@ SRCS_CPP_1 = \
 	bionic/wcwidth.cpp \
 	bionic/wmempcpy.cpp \
 	bionic/icu_static.cpp
-# TBD, following files still can not pass compiling!
-SRCS_CPP_EXCLUDE = \
-	bionic/abort.cpp \
-	bionic/signal.cpp \
-	bionic/strerror.cpp \
-	bionic/strsignal.cpp
-
-SRCS_CPP_2 = $(filter-out $(SRCS_CPP_EXCLUDE),$(SRCS_CPP_1))
-SRCS_CPP = $(addprefix bionic/libc/,${SRCS_CPP_2})
+SRCS_CPP = $(addprefix bionic/libc/,${SRCS_CPP_1})
 
 OBJS = $(SRCS_ASM:.S=.o)
 OBJS += $(SRCS_C:.c=.o)
@@ -215,22 +207,23 @@ DEPS = $(OBJS:.o=.o.d)
 
 %.o : %.cpp
 	$(RELPWD) $(CPP) $(CPPFLAGS) -MD -MF $(PRJPATH)/$@.d -o $(PRJPATH)/$@ $<
-	mv $@ $(PRJPATH)/out/
-	mv $@.d $(PRJPATH)/out/
+	mv $@ $(PRJPATH)/$(OBJ_DIR)/
+	mv $@.d $(PRJPATH)/$(OBJ_DIR)/
 
 %.o : %.c
 	$(RELPWD) $(CC) $(CFLAGS) -MD -MF $(PRJPATH)/$@.d -o $(PRJPATH)/$@ $<
-	mv $@ $(PRJPATH)/out/
-	mv $@.d $(PRJPATH)/out/
+	mv $@ $(PRJPATH)/$(OBJ_DIR)/
+	mv $@.d $(PRJPATH)/$(OBJ_DIR)/
 
 %.o : %.S
 	$(RELPWD) $(CC) $(AFLAGS) -MD -MF $(PRJPATH)/$@.d -o $(PRJPATH)/$@ $<
-	mv $@ $(PRJPATH)/out/
-	mv $@.d $(PRJPATH)/out/
+	mv $@ $(PRJPATH)/$(OBJ_DIR)/
+	mv $@.d $(PRJPATH)/$(OBJ_DIR)/
 
 all : $(OBJS)
 	@echo DONE!
 
 .PHONY : clean
 clean:
-	$(RM) $(OBJS) $(DEPS)	
+	$(RM) $(OBJS)
+	$(RM) $(DEPS)

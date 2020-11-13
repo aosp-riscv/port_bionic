@@ -4,3 +4,6 @@
 [submodule "bionic"]
 	path = bionic
 	url = https://github.com/aosp-riscv/platform_bionic.git
+[submodule "external/toybox"]
+	path = external/toybox
+	url = https://github.com/aosp-riscv/platform_external_toybox.git

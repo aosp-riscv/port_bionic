@@ -2,41 +2,43 @@ PRJPATH = .
 
 include $(PRJPATH)/build/common.mk
 
-INC_LOCAL =
-
-CFLAGS_LOCAL =
-
 AFLAGS += \
-	$(INC_LOCAL) \
 	$(INC_LIBC) \
 	$(CFLAGS_COMMON_GLOBAL) \
 	$(INC_COMMON_GLOBAL) \
 	$(CFLAGS_LIBC) \
-	$(CFLAGS_LOCAL) \
 	$(AFLAGS_COMPILER)
+
+
+INC_LOCAL = \
+	-Ibionic/libc/stdio \
+	-Ibionic/libstdc++/include
+
+INC_EXTRA = \
+	-Ibionic/libc/system_properties/include \
+	-Isystem/core/property_service/libpropertyinfoparser/include \
+	-I.intermediates
+
+CFLAGS_LOCAL = -DTREBLE_LINKER_NAMESPACES
+
+CPPFLAGS_COMPILER += -Wold-style-cast
 
 CPPFLAGS += \
 	$(INC_LOCAL) \
 	$(INC_LIBC) \
 	$(CFLAGS_COMMON_GLOBAL) \
+	$(INC_EXTRA) \
 	$(INC_COMMON_GLOBAL) \
 	$(CFLAGS_LIBC) \
 	$(CFLAGS_LOCAL) \
 	$(CPPFLAGS_COMPILER) \
 	$(CFLAGS_NOOVERRIDECLANGGLOBAL)
 
-SRCS_ASM = $(wildcard bionic/libc/arch-riscv64/syscalls/*.S)
-# TBD 
-# riscv64 doesn't support renameat, use renameat2 instead
-# https://github.com/golang/sys/commit/e5ecc2a6747ce8d4af18ed98b3de5ae30eb3a5bb
-# https://www.openwall.com/lists/musl/2018/11/11/1
-# so removed syscall of renameat
-# but how to handle renameat2, waiting later integration with rootfs
+SRCS_ASM = bionic/libc/arch-riscv64/syscalls/__getcwd.S
 
-SRCS_C =
+SRCS_C = 
 
-SRCS_CPP = \
-	$(SRCPATH_LIBC)/bionic/__set_errno.cpp
+SRCS_CPP = build/test/test.cpp
 
 OBJS = $(SRCS_ASM:.S=.o)
 OBJS += $(SRCS_C:.c=.o)
@@ -60,10 +62,10 @@ DEPS = $(OBJS:.o=.o.d)
 	mv $@.d $(PRJPATH)/$(OBJ_DIR)/
 
 all : $(OBJS)
+	$(CPP) -g -nostdlib -no-pie -Wl,-r $(OBJ_DIR)/test.o $(OBJ_DIR)/__getcwd.o -o $(OBJ_DIR)/t.o -target riscv64-unknown-linux-gnu -B/opt/riscv64/bin
 	@echo DONE!
 
 .PHONY : clean
 clean:
 	$(RM) $(OBJS)
 	$(RM) $(DEPS)
-

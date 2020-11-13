@@ -24,7 +24,7 @@ AFLAGS += \
 	-Iframeworks/native/include -Iframeworks/native/opengl/include \
 	-Iframeworks/av/include \
 	-isystem bionic/libc/include -isystem bionic/libc/kernel/uapi \
-	-isystem bionic/libc/kernel/uapi/asm-x86 \
+	-isystem bionic/libc/kernel/uapi/asm-riscv \
 	-isystem bionic/libc/kernel/android/scsi \
 	-isystem bionic/libc/kernel/android/uapi \
 	-Ilibnativehelper/include_jni \
@@ -47,17 +47,19 @@ DEPS = $(OBJS:.o=.o.d)
 
 %.o : %.c
 	$(RELPWD) $(CC) $(CFLAGS) -MD -MF $(PRJPATH)/$@.d -o $(PRJPATH)/$@ $<
-	mv $@ $(PRJPATH)/out/
-	mv $@.d $(PRJPATH)/out/
+	mv $@ $(PRJPATH)/$(OBJ_DIR)/
+	mv $@.d $(PRJPATH)/$(OBJ_DIR)/
 
 %.o : %.S
 	$(RELPWD) $(CC) $(AFLAGS) -MD -MF $(PRJPATH)/$@.d -o $(PRJPATH)/$@ $<
-	mv $@ $(PRJPATH)/out/
-	mv $@.d $(PRJPATH)/out/
+	mv $@ $(PRJPATH)/$(OBJ_DIR)/
+	mv $@.d $(PRJPATH)/$(OBJ_DIR)/
 
 all : $(OBJS)
+	rm -f $(LIB_DIR)/crtend.o && cp $(OBJ_DIR)/crtend.o $(LIB_DIR)/crtend.o
 	@echo DONE!
 
 .PHONY : clean
 clean:
-	$(RM) $(OBJS) $(DEPS)	
+	$(RM) $(OBJS)
+	$(RM) $(DEPS)

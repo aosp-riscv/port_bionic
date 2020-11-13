@@ -23,7 +23,7 @@ CFLAGS += \
 	-Iframeworks/native/include -Iframeworks/native/opengl/include \
 	-Iframeworks/av/include \
 	-isystem bionic/libc/include -isystem bionic/libc/kernel/uapi \
-	-isystem bionic/libc/kernel/uapi/asm-x86 -isystem bionic/libc/kernel/android/scsi \
+	-isystem bionic/libc/kernel/uapi/asm-riscv -isystem bionic/libc/kernel/android/scsi \
 	-isystem bionic/libc/kernel/android/uapi \
 	-Ilibnativehelper/include_jni \
 	-Wno-gcc-compat -Wall -Werror -fno-addrsig \
@@ -57,7 +57,7 @@ AFLAGS += \
 	-Iframeworks/native/include -Iframeworks/native/opengl/include \
 	-Iframeworks/av/include \
 	-isystem bionic/libc/include -isystem bionic/libc/kernel/uapi \
-	-isystem bionic/libc/kernel/uapi/asm-x86 \
+	-isystem bionic/libc/kernel/uapi/asm-riscv \
 	-isystem bionic/libc/kernel/android/scsi \
 	-isystem bionic/libc/kernel/android/uapi \
 	-Ilibnativehelper/include_jni \
@@ -82,19 +82,20 @@ DEPS = $(OBJS:.o=.o.d)
 
 %.o : %.c
 	$(RELPWD) $(CC) $(CFLAGS) -MD -MF $(PRJPATH)/$@.d -o $(PRJPATH)/$@ $<
-	mv $@ $(PRJPATH)/out/
-	mv $@.d $(PRJPATH)/out/
+	mv $@ $(PRJPATH)/$(OBJ_DIR)/
+	mv $@.d $(PRJPATH)/$(OBJ_DIR)/
 
 %.o : %.S
 	$(RELPWD) $(CC) $(AFLAGS) -MD -MF $(PRJPATH)/$@.d -o $(PRJPATH)/$@ $<
-	mv $@ $(PRJPATH)/out/
-	mv $@.d $(PRJPATH)/out/
+	mv $@ $(PRJPATH)/$(OBJ_DIR)/
+	mv $@.d $(PRJPATH)/$(OBJ_DIR)/
 
 all : $(OBJS)
-	$(CPP) -nostdlib -no-pie -Wl,-r $(OUTPUT_DIR)/crtbegin.o $(OUTPUT_DIR)/crtbrand.o -o $(OUTPUT_DIR)/crtbegin_static.o -target riscv64-unknown-linux-gnu -B/opt/riscv64/bin
-	cp $(OUTPUT_DIR)/crtbegin_static.o $(OUTPUT_DIR)/Scrt1.o
+	$(CPP) -nostdlib -no-pie -Wl,-r $(OBJ_DIR)/crtbegin.o $(OBJ_DIR)/crtbrand.o -o $(OBJ_DIR)/crtbegin_static.o -target riscv64-unknown-linux-gnu -B/opt/riscv64/bin
+	rm -f $(LIB_DIR)/crtbegin_static.o && cp $(OBJ_DIR)/crtbegin_static.o $(LIB_DIR)/crtbegin_static.o
 	@echo DONE!
 
 .PHONY : clean
 clean:
-	$(RM) $(OBJS) $(DEPS)	
+	$(RM) $(OBJS)
+	$(RM) $(DEPS)

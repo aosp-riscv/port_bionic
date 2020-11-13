@@ -1,14 +1,23 @@
 OUTPUT_DIR = out
 
-all : env_setup \
-	libc_static
+all : toybox
 
 libc_bionic:
 	@echo "Building $@ ..."
 	make -f build/libc_bionic.mk
-	@echo "Building $@ DONE!"
+	@echo "Building $@ DONE!"fi
 
-libc_bionic_ndk:
+libpropertyinfoparser:
+	@echo "Building $@ ..."
+	make -f build/libpropertyinfoparser.mk
+	@echo "Building $@ DONE!"fi
+
+libsystemproperties: libpropertyinfoparser
+	@echo "Building $@ ..."
+	make -f build/libsystemproperties.mk
+	@echo "Building $@ DONE!"fi
+
+libc_bionic_ndk: libsystemproperties
 	@echo "Building $@ ..."
 	make -f build/libc_bionic_ndk.mk
 	@echo "Building $@ DONE!"
@@ -125,30 +134,92 @@ libc_init_static:
 	make -f build/libc_init_static.mk
 	@echo "Building $@ DONE!"
 
-libc_static: libc_init_static libc_common_static
+libc_sources_static:
+	@echo "Building $@ ..."
+	make -f build/libc_sources_static.mk
+	@echo "Building $@ DONE!"
+
+libjemalloc5:
+	@echo "Building $@ ..."
+	make -f build/libjemalloc5.mk
+	@echo "Building $@ DONE!"
+
+libc_static: env_setup \
+		libc_sources_static \
+		libc_init_static \
+		libc_common_static \
+		libjemalloc5
 	@echo "Building $@ ..."
 	make -f build/libc_static.mk
 	@echo "Building $@ DONE!"
 
-crtbegin_static:
+crt: crtbegin_static crtend
+
+crtbegin_static: env_setup
 	@echo "Building $@ ..."
 	make -f build/crtbegin_static.mk
 	@echo "Building $@ DONE!"
 
-crtend:
+crtend: env_setup
 	@echo "Building $@ ..."
 	make -f build/crtend.mk
 	@echo "Building $@ DONE!"
+
+test: env_setup
+	@echo "Building $@ ..."
+	make -f build/test.mk
+	@echo "Building $@ DONE!"
+
+toybox: crt libc_static
+	@echo "Building $@ ..."
+	make env_setup
+	make -f build/toybox.mk
+	@echo "Building $@ DONE!"
+
+ALL_MODULES = \
+	libc_static \
+	crtbegin_static \
+	crtend \
+	libc_bionic_ndk \
+	libc_bionic \
+	libc_dns \
+	libc_fortify \
+	libc_freebsd_large_stack \
+	libc_freebsd \
+	libc_gdtoa \
+	libc_init_static \
+	libc_malloc \
+	libc_netbsd \
+	libc_nopthread \
+	libc_openbsd_large_stack \
+	libc_openbsd_ndk \
+	libc_openbsd \
+	libc_pthread \
+	libc_stack_protector \
+	libc_sources_static \
+	libc_syscalls \
+	libc_tzcode \
+	libstdcpp \
+	test \
+	toybox
+
+MODULES_1 = $(addprefix build/,${ALL_MODULES})
+MODULES = $(addsuffix .mk,${MODULES_1})
 
 .PHONY : clean
 clean :
 	@echo "Begin clean ......................."
 	$(RM) -rf $(OUTPUT_DIR)
+	@for m in $(MODULES); do $(MAKE) -f $$m clean || exit "$$?"; done
 	@echo "Done, clean ALL successfully!"
 
 .PHONY : env_setup
-env_setup: clean
-	@mkdir -p $(OUTPUT_DIR)
-	@echo "Created output dir."
+env_setup:
+	rm -rf $(OUTPUT_DIR)/obj
+	mkdir -p $(OUTPUT_DIR)/obj
+	mkdir -p $(OUTPUT_DIR)/lib
+	mkdir -p $(OUTPUT_DIR)/lib/static
+	mkdir -p $(OUTPUT_DIR)/bin
+	@echo "Setup enviroment."
 
 

@@ -37,7 +37,7 @@ INC_COMMON_GLOBAL = -Isystem/core/include -Isystem/media/audio/include \
 	-Iframeworks/native/opengl/include -Iframeworks/av/include
 
 INC_COMMON_GLOBAL += -isystem bionic/libc/include -isystem bionic/libc/kernel/uapi \
-	-isystem bionic/libc/kernel/uapi/asm-x86 -isystem bionic/libc/kernel/android/scsi \
+	-isystem bionic/libc/kernel/uapi/asm-riscv -isystem bionic/libc/kernel/android/scsi \
 	-isystem bionic/libc/kernel/android/uapi
 
 # CommonNativehelperInclude
@@ -107,3 +107,7 @@ SRCPATH_LIBC_GDTOA = $(SRCPATH_LIBC_OPENBSD)/lib/libc/gdtoa
 SRCPATH_LIBC_BIONIC = $(SRCPATH_LIBC)/bionic
 SRCPATH_LIBC_DNS = $(SRCPATH_LIBC)/dns
 
+OUTPUT_DIR = out
+OBJ_DIR = $(OUTPUT_DIR)/obj
+LIB_DIR = $(OUTPUT_DIR)/lib
+BIN_DIR = $(OUTPUT_DIR)/bin

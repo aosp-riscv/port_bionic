@@ -2,11 +2,11 @@ PRJPATH = .
 
 include $(PRJPATH)/build/common.mk
 
-###############################################
-# libc_fortify
-INC_LOCAL =
+INC_LOCAL = \
+	-Isystem/core/property_service/libpropertyinfoparser/include \
+	-Isystem/core/property_service/libpropertyinfoparser
 
-CFLAGS_LOCAL = -U_FORTIFY_SOURCE -D__BIONIC_DECLARE_FORTIFY_HELPERS
+CFLAGS_LOCAL =
 
 CPPFLAGS += \
 	$(INC_LOCAL) \
@@ -18,17 +18,13 @@ CPPFLAGS += \
 	$(CPPFLAGS_COMPILER) \
 	$(CFLAGS_NOOVERRIDECLANGGLOBAL)
 
-SRCS_ASM = 
-
 SRCS_C =
 
 SRCS_CPP = \
-	$(SRCPATH_LIBC_BIONIC)/fortify.cpp
+	system/core/property_service/libpropertyinfoparser/property_info_parser.cpp
 
-OBJS = $(SRCS_ASM:.S=.o)
-OBJS += $(SRCS_C:.c=.o)
+OBJS = $(SRCS_C:.c=.o)
 OBJS += $(SRCS_CPP:.cpp=.o)
-
 DEPS = $(OBJS:.o=.o.d)
 
 %.o : %.cpp
@@ -38,11 +34,6 @@ DEPS = $(OBJS:.o=.o.d)
 
 %.o : %.c
 	$(RELPWD) $(CC) $(CFLAGS) -MD -MF $(PRJPATH)/$@.d -o $(PRJPATH)/$@ $<
-	mv $@ $(PRJPATH)/$(OBJ_DIR)/
-	mv $@.d $(PRJPATH)/$(OBJ_DIR)/
-
-%.o : %.S
-	$(RELPWD) $(CC) $(AFLAGS) -MD -MF $(PRJPATH)/$@.d -o $(PRJPATH)/$@ $<
 	mv $@ $(PRJPATH)/$(OBJ_DIR)/
 	mv $@.d $(PRJPATH)/$(OBJ_DIR)/
 

@@ -8,6 +8,15 @@ INC_LOCAL =
 
 CFLAGS_LOCAL = -fno-stack-protector
 
+AFLAGS += \
+	$(INC_LIBC) \
+	$(INC_LOCAL) \
+	$(CFLAGS_COMMON_GLOBAL) \
+	$(INC_COMMON_GLOBAL) \
+	$(CFLAGS_LIBC) \
+	$(CFLAGS_LOCAL) \
+	$(AFLAGS_COMPILER)
+
 CPPFLAGS += \
 	$(INC_LOCAL) \
 	$(INC_LIBC) \
@@ -25,7 +34,8 @@ CPPFLAGS += \
 # some refernece: https://keithp.com/documents/lca2020-picolibc.pdf
 # TLS: Thread Local Storage
 
-SRCS_ASM = 
+SRCS_ASM = \
+	bionic/libc/arch-riscv64/bionic/__set_tls.S
 
 SRCS_C =
 
@@ -41,22 +51,23 @@ DEPS = $(OBJS:.o=.o.d)
 
 %.o : %.cpp
 	$(RELPWD) $(CPP) $(CPPFLAGS) -MD -MF $(PRJPATH)/$@.d -o $(PRJPATH)/$@ $<
-	mv $@ $(PRJPATH)/out/
-	mv $@.d $(PRJPATH)/out/
+	mv $@ $(PRJPATH)/$(OBJ_DIR)/
+	mv $@.d $(PRJPATH)/$(OBJ_DIR)/
 
 %.o : %.c
 	$(RELPWD) $(CC) $(CFLAGS) -MD -MF $(PRJPATH)/$@.d -o $(PRJPATH)/$@ $<
-	mv $@ $(PRJPATH)/out/
-	mv $@.d $(PRJPATH)/out/
+	mv $@ $(PRJPATH)/$(OBJ_DIR)/
+	mv $@.d $(PRJPATH)/$(OBJ_DIR)/
 
 %.o : %.S
 	$(RELPWD) $(CC) $(AFLAGS) -MD -MF $(PRJPATH)/$@.d -o $(PRJPATH)/$@ $<
-	mv $@ $(PRJPATH)/out/
-	mv $@.d $(PRJPATH)/out/
+	mv $@ $(PRJPATH)/$(OBJ_DIR)/
+	mv $@.d $(PRJPATH)/$(OBJ_DIR)/
 
 all : $(OBJS)
 	@echo DONE!
 
 .PHONY : clean
 clean:
-	$(RM) $(OBJS) $(DEPS)	
+	$(RM) $(OBJS)
+	$(RM) $(DEPS)
