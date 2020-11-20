@@ -1,6 +1,6 @@
 OUTPUT_DIR = out
 
-all : toybox
+all : toybox mksh
 
 libc_bionic:
 	@echo "Building $@ ..."
@@ -176,6 +176,12 @@ toybox: crt libc_static
 	make -f build/toybox.mk
 	@echo "Building $@ DONE!"
 
+mksh: crt libc_static
+	@echo "Building $@ ..."
+	make env_setup
+	make -f build/mksh.mk
+	@echo "Building $@ DONE!"
+
 ALL_MODULES = \
 	libc_static \
 	crtbegin_static \
@@ -213,6 +219,8 @@ clean :
 	@for m in $(MODULES); do $(MAKE) -f $$m clean || exit "$$?"; done
 	@echo "Done, clean ALL successfully!"
 
+# env_setup will clean-up the obj folder, but not impact other output folders
+# so it should be safe
 .PHONY : env_setup
 env_setup:
 	rm -rf $(OUTPUT_DIR)/obj
@@ -220,6 +228,7 @@ env_setup:
 	mkdir -p $(OUTPUT_DIR)/lib
 	mkdir -p $(OUTPUT_DIR)/lib/static
 	mkdir -p $(OUTPUT_DIR)/bin
+	mkdir -p $(OUTPUT_DIR)/bin/unstripped
 	@echo "Setup enviroment."
 
 

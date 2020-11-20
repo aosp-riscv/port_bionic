@@ -226,7 +226,10 @@ SRCS_C_P = \
 	toys/pending/stty.c \
 	toys/pending/tar.c \
 	toys/pending/tr.c \
-	toys/pending/traceroute.c
+	toys/pending/traceroute.c \
+	toys/pending/getty.c \
+	toys/pending/mdev.c \
+	toys/pending/init.c
 #	toys/pending/gzip.c
 
 SRCS_C_ALL = $(SRCS_C_A) $(SRCS_C_T) $(SRCS_C_P)
@@ -242,6 +245,7 @@ DEPS = $(OBJS:.o=.o.d)
 	mv $@.d $(PRJPATH)/$(OBJ_DIR)/
 
 all : $(OBJS)
+	rm -f $(BIN_DIR)/unstripped/toybox
 	rm -f $(BIN_DIR)/toybox
 	/opt/riscv64/bin/riscv64-unknown-linux-gnu-ld \
 		-nostdlib -static \
@@ -254,7 +258,8 @@ all : $(OBJS)
 		-lc \
 		--end-group \
 		./out/lib/crtend.o \
-		-o $(BIN_DIR)/toybox
+		-o $(BIN_DIR)/unstripped/toybox
+	/opt/riscv64/bin/riscv64-unknown-linux-gnu-strip $(BIN_DIR)/unstripped/toybox -o $(BIN_DIR)/toybox
 	@echo DONE!
 
 .PHONY : clean

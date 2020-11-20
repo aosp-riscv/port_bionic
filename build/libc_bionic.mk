@@ -40,12 +40,16 @@ SRCS_ASM = \
 	bionic/libc/arch-riscv64/bionic/_exit_with_stack_teardown.S \
 	bionic/libc/arch-riscv64/bionic/syscall.S \
 	bionic/libc/arch-riscv64/bionic/vfork.S \
-	bionic/libc/arch-riscv64/bionic/setjmp.S
+	bionic/libc/arch-riscv64/bionic/setjmp.S \
+	bionic/libc/arch-riscv64/bionic/longjmp.S \
+	bionic/libc/arch-riscv64/bionic/sigsetjmp.S
 
 SRCS_C = $(wildcard bionic/libc/arch-riscv64/string/*.c)
 SRCS_C += \
 	bionic/libc/arch-riscv64/bionic/renameat.c \
 	bionic/libc/bionic/strnlen.c \
+	bionic/libc/arch-riscv64/bionic/siglongjmp.c \
+	bionic/libc/arch-riscv64/bionic/sigsetjmp_tail.c
 
 # TBD: refer x86, so exclude strchr.cpp/strnlen.c/strrchr.cpp
 # mem*/str* files are arch depended, have not compiled, TBD
