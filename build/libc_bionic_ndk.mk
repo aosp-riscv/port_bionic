@@ -1,36 +1,23 @@
 PRJPATH = .
 
-include $(PRJPATH)/build/common.mk
+include $(PRJPATH)/build/common_bionic_libc.mk
 
 ########################################
 # libc_bionic_ndk
-INC_LOCAL = \
-	-Ibionic/libc/stdio \
-	-Ibionic/libstdc++/include
-
-INC_EXTRA = \
-	-Ibionic/libc/system_properties/include \
-	-Isystem/core/property_service/libpropertyinfoparser/include \
-	-I.intermediates
-
-CFLAGS_LOCAL = -DTREBLE_LINKER_NAMESPACES
-
-CPPFLAGS_COMPILER += -Wold-style-cast
+#
+# -DTREBLE_LINKER_NAMESPACES from m.libc_bionic_ndk_android_x86_core_static.cflags
+# -Wold-style-cast from m.libc_bionic_ndk_android_x86_core_static.cppflags
+# other flags are from build rules
+# notice:
+# depends on generated out/soong/.intermediates/bionic/libc/generated_android_ids/gen/generated_android_ids.h,
+# which has been added manually under ./.intermediates till now (TBD)
 
 CPPFLAGS += \
-	$(INC_LOCAL) \
-	$(INC_LIBC) \
-	$(CFLAGS_COMMON_GLOBAL) \
-	$(INC_EXTRA) \
-	$(INC_COMMON_GLOBAL) \
-	$(CFLAGS_LIBC) \
-	$(CFLAGS_LOCAL) \
-	$(CPPFLAGS_COMPILER) \
-	$(CFLAGS_NOOVERRIDECLANGGLOBAL)
-
-SRCS_ASM =
-
-SRCS_C =
+	-DTREBLE_LINKER_NAMESPACES \
+	-Wold-style-cast \
+	-Ibionic/libc/stdio -Ibionic/libstdc++/include \
+	-Ibionic/libc/system_properties/include -Isystem/core/property_service/libpropertyinfoparser/include \
+	-I.intermediates
 
 SRCS_CPP_1 = \
 	bionic/NetdClientDispatch.cpp \
@@ -177,7 +164,7 @@ SRCS_CPP_1 = \
 	bionic/sys_shm.cpp \
 	bionic/sys_signalfd.cpp \
 	bionic/sys_time.cpp \
-	bionic/sysinfo2.cpp \
+	bionic/sysinfo.cpp \
 	bionic/syslog.cpp \
 	bionic/system.cpp \
 	bionic/system_property_api.cpp \
@@ -199,31 +186,8 @@ SRCS_CPP_1 = \
 	bionic/icu_static.cpp
 SRCS_CPP = $(addprefix bionic/libc/,${SRCS_CPP_1})
 
-OBJS = $(SRCS_ASM:.S=.o)
-OBJS += $(SRCS_C:.c=.o)
-OBJS += $(SRCS_CPP:.cpp=.o)
+include $(PRJPATH)/build/common_rules.mk
 
-DEPS = $(OBJS:.o=.o.d)
-
-%.o : %.cpp
-	$(RELPWD) $(CPP) $(CPPFLAGS) -MD -MF $(PRJPATH)/$@.d -o $(PRJPATH)/$@ $<
-	mv $@ $(PRJPATH)/$(OBJ_DIR)/
-	mv $@.d $(PRJPATH)/$(OBJ_DIR)/
-
-%.o : %.c
-	$(RELPWD) $(CC) $(CFLAGS) -MD -MF $(PRJPATH)/$@.d -o $(PRJPATH)/$@ $<
-	mv $@ $(PRJPATH)/$(OBJ_DIR)/
-	mv $@.d $(PRJPATH)/$(OBJ_DIR)/
-
-%.o : %.S
-	$(RELPWD) $(CC) $(AFLAGS) -MD -MF $(PRJPATH)/$@.d -o $(PRJPATH)/$@ $<
-	mv $@ $(PRJPATH)/$(OBJ_DIR)/
-	mv $@.d $(PRJPATH)/$(OBJ_DIR)/
-
+.DEFAULT_GOAL := all
 all : $(OBJS)
 	@echo DONE!
-
-.PHONY : clean
-clean:
-	$(RM) $(OBJS)
-	$(RM) $(DEPS)

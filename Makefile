@@ -94,7 +94,7 @@ libc_syscalls:
 
 libstdcpp:
 	@echo "Building $@ ..."
-	make -f build/libstdcpp.mk
+	make -f build/libstdcpp.mk VARIANT=static
 	@echo "Building $@ DONE!"
 
 # TBD:
@@ -144,7 +144,7 @@ libjemalloc5:
 	make -f build/libjemalloc5.mk
 	@echo "Building $@ DONE!"
 
-libc_static: env_setup \
+libc_static: \
 		libc_sources_static \
 		libc_init_static \
 		libc_common_static \
@@ -155,12 +155,17 @@ libc_static: env_setup \
 
 crt: crtbegin_static crtend
 
-crtbegin_static: env_setup
+crtbrand :
+	@echo "Building $@ ..."
+	make -f build/crtbrand.mk
+	@echo "Building $@ DONE!"
+
+crtbegin_static: crtbrand
 	@echo "Building $@ ..."
 	make -f build/crtbegin_static.mk
 	@echo "Building $@ DONE!"
 
-crtend: env_setup
+crtend:
 	@echo "Building $@ ..."
 	make -f build/crtend.mk
 	@echo "Building $@ DONE!"
@@ -172,51 +177,18 @@ test: env_setup
 
 toybox: crt libc_static
 	@echo "Building $@ ..."
-	make env_setup
 	make -f build/toybox.mk
 	@echo "Building $@ DONE!"
 
 mksh: crt libc_static
 	@echo "Building $@ ..."
-	make env_setup
 	make -f build/mksh.mk
 	@echo "Building $@ DONE!"
-
-ALL_MODULES = \
-	libc_static \
-	crtbegin_static \
-	crtend \
-	libc_bionic_ndk \
-	libc_bionic \
-	libc_dns \
-	libc_fortify \
-	libc_freebsd_large_stack \
-	libc_freebsd \
-	libc_gdtoa \
-	libc_init_static \
-	libc_malloc \
-	libc_netbsd \
-	libc_nopthread \
-	libc_openbsd_large_stack \
-	libc_openbsd_ndk \
-	libc_openbsd \
-	libc_pthread \
-	libc_stack_protector \
-	libc_sources_static \
-	libc_syscalls \
-	libc_tzcode \
-	libstdcpp \
-	test \
-	toybox
-
-MODULES_1 = $(addprefix build/,${ALL_MODULES})
-MODULES = $(addsuffix .mk,${MODULES_1})
 
 .PHONY : clean
 clean :
 	@echo "Begin clean ......................."
 	$(RM) -rf $(OUTPUT_DIR)
-	@for m in $(MODULES); do $(MAKE) -f $$m clean || exit "$$?"; done
 	@echo "Done, clean ALL successfully!"
 
 # env_setup will clean-up the obj folder, but not impact other output folders

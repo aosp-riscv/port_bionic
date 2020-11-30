@@ -1,3 +1,5 @@
+#!/bin/bash
+
 PATH_QEMU=/opt/qemu/bin
 
 PATH_PRJ=`pwd`

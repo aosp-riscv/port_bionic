@@ -1,39 +1,21 @@
 PRJPATH = .
 
-include $(PRJPATH)/build/common.mk
+include $(PRJPATH)/build/common_bionic_libc.mk
 
 ########################################
 # libc_bionic
 INC_LOCAL = -Ibionic/libstdc++/include
 
 CFLAGS += \
-	$(INC_LIBC) \
-	$(INC_LOCAL) \
-	$(CFLAGS_COMMON_GLOBAL) \
-	$(INC_COMMON_GLOBAL) \
-	$(CFLAGS_LIBC) \
-	$(CFLAGS_LOCAL) \
-	$(CFLAGS_COMPILER) \
-	$(CFLAGS_NOOVERRIDECLANGGLOBAL)
+	-Ibionic/libstdc++/include
 
 AFLAGS += \
-	$(INC_LIBC) \
-	$(INC_LOCAL) \
-	$(CFLAGS_COMMON_GLOBAL) \
-	$(INC_COMMON_GLOBAL) \
-	$(CFLAGS_LIBC) \
-	$(CFLAGS_LOCAL) \
-	$(AFLAGS_COMPILER)
+	-Ibionic/libstdc++/include
 
+# TBD need to double checkout, I used to lost this -Wold-style-cast
 CPPFLAGS += \
-	$(INC_LIBC) \
-	$(INC_LOCAL) \
-	$(CFLAGS_COMMON_GLOBAL) \
-	$(INC_COMMON_GLOBAL) \
-	$(CFLAGS_LIBC) \
-	$(CFLAGS_LOCAL) \
-	$(CPPFLAGS_COMPILER) \
-	$(CFLAGS_NOOVERRIDECLANGGLOBAL)
+	-Wold-style-cast \
+	-Ibionic/libstdc++/include
 
 SRCS_ASM = \
 	bionic/libc/arch-riscv64/bionic/__bionic_clone.S \
@@ -51,8 +33,6 @@ SRCS_C += \
 	bionic/libc/arch-riscv64/bionic/siglongjmp.c \
 	bionic/libc/arch-riscv64/bionic/sigsetjmp_tail.c
 
-# TBD: refer x86, so exclude strchr.cpp/strnlen.c/strrchr.cpp
-# mem*/str* files are arch depended, have not compiled, TBD
 SRCS_CPP = \
 	bionic/libc/bionic/getauxval.cpp \
 	bionic/libc/bionic/sysconf.cpp \
@@ -63,31 +43,8 @@ SRCS_CPP = \
 	bionic/libc/bionic/strrchr.cpp
 
 
-OBJS = $(SRCS_ASM:.S=.o)
-OBJS += $(SRCS_C:.c=.o)
-OBJS += $(SRCS_CPP:.cpp=.o)
+include $(PRJPATH)/build/common_rules.mk
 
-DEPS = $(OBJS:.o=.o.d)
-
-%.o : %.cpp
-	$(RELPWD) $(CPP) $(CPPFLAGS) -MD -MF $(PRJPATH)/$@.d -o $(PRJPATH)/$@ $<
-	mv $@ $(PRJPATH)/$(OBJ_DIR)/
-	mv $@.d $(PRJPATH)/$(OBJ_DIR)/
-
-%.o : %.c
-	$(RELPWD) $(CC) $(CFLAGS) -MD -MF $(PRJPATH)/$@.d -o $(PRJPATH)/$@ $<
-	mv $@ $(PRJPATH)/$(OBJ_DIR)/
-	mv $@.d $(PRJPATH)/$(OBJ_DIR)/
-
-%.o : %.S
-	$(RELPWD) $(CC) $(AFLAGS) -MD -MF $(PRJPATH)/$@.d -o $(PRJPATH)/$@ $<
-	mv $@ $(PRJPATH)/$(OBJ_DIR)/
-	mv $@.d $(PRJPATH)/$(OBJ_DIR)/
-
+.DEFAULT_GOAL := all
 all : $(OBJS)
 	@echo DONE!
-
-.PHONY : clean
-clean:
-	$(RM) $(OBJS)
-	$(RM) $(DEPS)

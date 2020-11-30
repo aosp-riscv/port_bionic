@@ -1,11 +1,9 @@
 PRJPATH = .
 
-include $(PRJPATH)/build/common.mk
+include $(PRJPATH)/build/common_bionic_libc.mk
 
 ###############################################
 # libc_tzcode
-INC_LOCAL = -Ibionic/libc/tzcode
-
 CFLAGS_LOCAL = \
 	-Wno-unused-parameter \
 	-DALL_STATE \
@@ -20,26 +18,12 @@ CFLAGS_LOCAL = \
 	-Dlint
 
 CFLAGS += \
-	$(INC_LOCAL) \
-	$(INC_LIBC) \
-	$(CFLAGS_COMMON_GLOBAL) \
-	$(INC_COMMON_GLOBAL) \
-	$(CFLAGS_LIBC) \
-	$(CFLAGS_LOCAL) \
-	$(CFLAGS_COMPILER) \
-	$(CFLAGS_NOOVERRIDECLANGGLOBAL)
+	-Ibionic/libc/tzcode \
+	$(CFLAGS_LOCAL)
 
 CPPFLAGS += \
-	$(INC_LOCAL) \
-	$(INC_LIBC) \
-	$(CFLAGS_COMMON_GLOBAL) \
-	$(INC_COMMON_GLOBAL) \
-	$(CFLAGS_LIBC) \
-	$(CFLAGS_LOCAL) \
-	$(CPPFLAGS_COMPILER) \
-	$(CFLAGS_NOOVERRIDECLANGGLOBAL)
-
-SRCS_ASM = 
+	-Ibionic/libc/tzcode \
+	$(CFLAGS_LOCAL)
 
 SRCS_C = \
 	$(SRCPATH_LIBC)/tzcode/asctime.c \
@@ -52,31 +36,10 @@ SRCS_C = \
 SRCS_CPP = \
 	$(SRCPATH_LIBC)/tzcode/bionic.cpp
 
-OBJS = $(SRCS_ASM:.S=.o)
-OBJS += $(SRCS_C:.c=.o)
-OBJS += $(SRCS_CPP:.cpp=.o)
+include $(PRJPATH)/build/common_rules.mk
 
-DEPS = $(OBJS:.o=.o.d)
-
-%.o : %.cpp
-	$(RELPWD) $(CPP) $(CPPFLAGS) -MD -MF $(PRJPATH)/$@.d -o $(PRJPATH)/$@ $<
-	mv $@ $(PRJPATH)/$(OBJ_DIR)/
-	mv $@.d $(PRJPATH)/$(OBJ_DIR)/
-
-%.o : %.c
-	$(RELPWD) $(CC) $(CFLAGS) -MD -MF $(PRJPATH)/$@.d -o $(PRJPATH)/$@ $<
-	mv $@ $(PRJPATH)/$(OBJ_DIR)/
-	mv $@.d $(PRJPATH)/$(OBJ_DIR)/
-
-%.o : %.S
-	$(RELPWD) $(CC) $(AFLAGS) -MD -MF $(PRJPATH)/$@.d -o $(PRJPATH)/$@ $<
-	mv $@ $(PRJPATH)/$(OBJ_DIR)/
-	mv $@.d $(PRJPATH)/$(OBJ_DIR)/
-
+.DEFAULT_GOAL := all
 all : $(OBJS)
+	@echo ${OBJS}
 	@echo DONE!
 
-.PHONY : clean
-clean:
-	$(RM) $(OBJS)
-	$(RM) $(DEPS)

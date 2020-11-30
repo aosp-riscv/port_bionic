@@ -1,28 +1,13 @@
 PRJPATH = .
 
-include $(PRJPATH)/build/common.mk
+include $(PRJPATH)/build/common_bionic_libc.mk
 
 #########################################
 # libc_freebsd
-INC_LOCAL = -Ibionic/libc/upstream-freebsd/android/include 
-
-CFLAGS_LOCAL = -Wno-sign-compare -Wno-unused-parameter -include freebsd-compat.h
-
 CFLAGS += \
-	$(INC_LOCAL) \
-	$(INC_LIBC) \
-	$(CFLAGS_COMMON_GLOBAL) \
-	$(INC_COMMON_GLOBAL) \
-	$(CFLAGS_LIBC) \
-	$(CFLAGS_LOCAL) \
-	$(CFLAGS_COMPILER) \
-	$(CFLAGS_NOOVERRIDECLANGGLOBAL)
+	-Wno-sign-compare -Wno-unused-parameter -include freebsd-compat.h \
+	-Ibionic/libc/upstream-freebsd/android/include
 
-SRCS_ASM = 
-
-# TBD
-# notice I copy this from x86 building, some files are excluded.
-# for risc-v, the sourcefile list may be different, double-check this！！！
 SRCS_C = \
 	$(SRCPATH_LIBC_FREEBSD)/lib/libc/gen/ldexp.c \
 	$(SRCPATH_LIBC_FREEBSD)/lib/libc/gen/sleep.c \
@@ -54,33 +39,8 @@ SRCS_C = \
 	$(SRCPATH_LIBC_FREEBSD)/lib/libc/string/wmemmove.c \
 	$(SRCPATH_LIBC_FREEBSD)/lib/libc/string/wmemset.c
 
-SRCS_CPP =
+include $(PRJPATH)/build/common_rules.mk
 
-OBJS = $(SRCS_ASM:.S=.o)
-OBJS += $(SRCS_C:.c=.o)
-OBJS += $(SRCS_CPP:.cpp=.o)
-
-DEPS = $(OBJS:.o=.o.d)
-
-%.o : %.cpp
-	$(RELPWD) $(CPP) $(CPPFLAGS) -MD -MF $(PRJPATH)/$@.d -o $(PRJPATH)/$@ $<
-	mv $@ $(PRJPATH)/$(OBJ_DIR)/
-	mv $@.d $(PRJPATH)/$(OBJ_DIR)/
-
-%.o : %.c
-	$(RELPWD) $(CC) $(CFLAGS) -MD -MF $(PRJPATH)/$@.d -o $(PRJPATH)/$@ $<
-	mv $@ $(PRJPATH)/$(OBJ_DIR)/
-	mv $@.d $(PRJPATH)/$(OBJ_DIR)/
-
-%.o : %.S
-	$(RELPWD) $(CC) $(AFLAGS) -MD -MF $(PRJPATH)/$@.d -o $(PRJPATH)/$@ $<
-	mv $@ $(PRJPATH)/$(OBJ_DIR)/
-	mv $@.d $(PRJPATH)/$(OBJ_DIR)/
-
+.DEFAULT_GOAL := all
 all : $(OBJS)
 	@echo DONE!
-
-.PHONY : clean
-clean:
-	$(RM) $(OBJS)
-	$(RM) $(DEPS)

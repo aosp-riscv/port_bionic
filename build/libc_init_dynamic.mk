@@ -2,14 +2,10 @@ PRJPATH = .
 
 include $(PRJPATH)/build/common_bionic_libc.mk
 
-###############################################
-# libc_malloc
-
 CPPFLAGS += \
-	-fvisibility=hidden
+	-fno-stack-protector
 
-SRCS_CPP = \
-	$(SRCPATH_LIBC_BIONIC)/jemalloc_wrapper.cpp
+SRCS_CPP = bionic/libc/bionic/libc_init_dynamic.cpp
 
 include $(PRJPATH)/build/common_rules.mk
 

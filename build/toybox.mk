@@ -2,51 +2,39 @@ PRJPATH = .
 
 include $(PRJPATH)/build/common.mk
 
+####################################
+# toybox
+# Defined: external/toybox/Android.bp:454:1
+
+m.toybox_android_riscv64_core.cflags = \
+	-std=gnu11 -Os -Wall -Werror -Wno-char-subscripts -Wno-deprecated-declarations \
+	-Wno-missing-field-initializers -Wno-pointer-arith -Wno-sign-compare \
+	-Wno-string-plus-int -Wno-unused-parameter -funsigned-char \
+	-ffunction-sections -fdata-sections -fno-asynchronous-unwind-tables \
+	'-DTOYBOX_VENDOR="-android"' \
+	-target riscv64-unknown-linux-gnu \
+	-B${g.android.soong.cc.config.RISCV64GccRoot}/riscv64/bin \
+	-fPIE
+
 CFLAGS += \
-	-Wno-enum-compare -Wno-enum-compare-switch -Wno-null-pointer-arithmetic \
-	-Wno-null-dereference \
+	${g.android.soong.cc.config.ClangExternalCflags} \
 	-Iexternal/toybox \
-	-DANDROID -fmessage-length=0 -W -Wall -Wno-unused -Winit-self \
-	-Wpointer-arith -no-canonical-prefixes -DNDEBUG -UDEBUG -fno-exceptions \
-	-Wno-multichar -O2 -g -fno-strict-aliasing \
-	-fdebug-prefix-map=/proc/self/cwd= \
-	-D__compiler_offsetof=__builtin_offsetof -faddrsig -Wimplicit-fallthrough \
-	-Werror=int-conversion -Wno-reserved-id-macro -Wno-format-pedantic \
-	-Wno-unused-command-line-argument -fcolor-diagnostics \
-	-Wno-zero-as-null-pointer-constant -Wno-sign-compare \
-	-Wno-defaulted-function-deleted -Wno-inconsistent-missing-override \
-	-ffunction-sections -fdata-sections -fno-short-enums -funwind-tables \
-	-fstack-protector-strong -Wa,--noexecstack -D_FORTIFY_SOURCE=2 \
-	-Wstrict-aliasing=2 -Werror=return-type -Werror=non-virtual-dtor \
-	-Werror=address -Werror=sequence-point -Werror=date-time \
-	-Werror=format-security -nostdlibinc \
+	${g.android.soong.cc.config.RISCV64ClangCflags} \
+	${g.android.soong.cc.config.CommonClangGlobalCflags} \
+	${g.android.soong.cc.config.DeviceClangGlobalCflags} \
+	${g.android.soong.cc.config.RISCV64ToolchainCflags} \
+	${g.android.soong.cc.config.RISCV64VariantClangCflags} \
 	-Isystem/core/liblog/include -Iexternal/selinux/libselinux/include \
 	-Isystem/core/libcutils/include -Isystem/core/libprocessgroup/include \
 	-Iexternal/boringssl/src/include -Iexternal/zlib -Ibionic/libc/include \
 	-D__LIBC_API__=10000 -D__LIBM_API__=10000 -D__LIBDL_API__=10000 \
-	-Isystem/core/include -Isystem/media/audio/include \
-	-Ihardware/libhardware/include -Ihardware/libhardware_legacy/include \
-	-Ihardware/ril/include -Iframeworks/native/include \
-	-Iframeworks/native/opengl/include -Iframeworks/av/include \
-	-isystem bionic/libc/include -isystem bionic/libc/kernel/uapi \
-	-isystem bionic/libc/kernel/uapi/asm-riscv \
-	-isystem bionic/libc/kernel/android/scsi \
-	-isystem bionic/libc/kernel/android/uapi \
-	-Ilibnativehelper/include_jni \
-	-std=gnu11 -Os -Wall -Werror -Wno-char-subscripts \
-	-Wno-deprecated-declarations -Wno-missing-field-initializers \
-	-Wno-pointer-arith -Wno-sign-compare -Wno-string-plus-int \
-	-Wno-unused-parameter -funsigned-char -ffunction-sections -fdata-sections \
-	-fno-asynchronous-unwind-tables '-DTOYBOX_VENDOR="-android"' \
-	-target riscv64-unknown-linux-gnu \
-	-B/opt/riscv64/bin \
-	-fPIE -std=gnu99 \
-	-Werror=int-to-pointer-cast -Werror=pointer-to-int-cast \
-	-Werror=address-of-temporary -Werror=return-type \
-	-Wno-tautological-constant-compare -Wno-tautological-type-limit-compare \
-	-Wno-tautological-unsigned-enum-zero-compare \
-	-Wno-tautological-unsigned-zero-compare \
-	-Wno-c++98-compat-extra-semi -Wno-return-std-move-in-c++11
+	${g.android.soong.cc.config.CommonGlobalIncludes} \
+	${g.android.soong.cc.config.RISCV64IncludeFlags} \
+	${g.android.soong.cc.config.CommonNativehelperInclude} \
+	${m.toybox_android_riscv64_core.cflags} \
+	-std=gnu99 \
+	${g.android.soong.cc.config.CommonGlobalConlyflags} \
+	${g.android.soong.cc.config.NoOverrideClangGlobalCflags}
 
 SRCS_C_A =
 #SRCS_C_A = \
@@ -63,13 +51,13 @@ SRCS_C_T = \
 	lib/args.c \
 	lib/commas.c \
 	lib/dirtree.c \
-	lib/help_2.c \
+	lib/help.c \
 	lib/lib.c \
 	lib/linestack.c \
 	lib/llist.c \
 	lib/net.c \
 	lib/portability.c \
-	lib/tty_2.c \
+	lib/tty.c \
 	lib/xwrap.c \
 	main.c \
 	toys/lsb/dmesg.c \
@@ -235,34 +223,25 @@ SRCS_C_P = \
 SRCS_C_ALL = $(SRCS_C_A) $(SRCS_C_T) $(SRCS_C_P)
 SRCS_C = $(addprefix external/toybox/,${SRCS_C_ALL})
 
-OBJS = $(SRCS_C:.c=.o)
+include $(PRJPATH)/build/common_rules.mk
 
-DEPS = $(OBJS:.o=.o.d)
-
-%.o : %.c
-	$(RELPWD) $(CC) $(CFLAGS) -MD -MF $(PRJPATH)/$@.d -o $(PRJPATH)/$@ $<
-	mv $@ $(PRJPATH)/$(OBJ_DIR)/
-	mv $@.d $(PRJPATH)/$(OBJ_DIR)/
-
+.DEFAULT_GOAL := all
 all : $(OBJS)
-	rm -f $(BIN_DIR)/unstripped/toybox
-	rm -f $(BIN_DIR)/toybox
-	/opt/riscv64/bin/riscv64-unknown-linux-gnu-ld \
+	@rm -f $(BIN_DIR)/unstripped/toybox
+	@rm -f $(BIN_DIR)/toybox
+	@if [ ! -e $(BIN_DIR) ]; then mkdir -p $(BIN_DIR)/unstripped; fi
+	${LD} \
 		-nostdlib -static \
-		./out/lib/crtbegin_static.o \
-		-L./out/lib/static \
-		$(OBJ_DIR)/*.o \
+		${LIB_DIR}/crtbegin_static.o \
+		-L${LIB_DIR}/static \
+		${OUTPUT_OBJS} \
 		--start-group \
 		/opt/riscv64/lib/gcc/riscv64-unknown-linux-gnu/10.1.0/libgcc.a \
 		/opt/riscv64/lib/gcc/riscv64-unknown-linux-gnu/10.1.0/libgcc_eh.a \
 		-lc \
 		--end-group \
-		./out/lib/crtend.o \
+		${LIB_DIR}/crtend.o \
 		-o $(BIN_DIR)/unstripped/toybox
-	/opt/riscv64/bin/riscv64-unknown-linux-gnu-strip $(BIN_DIR)/unstripped/toybox -o $(BIN_DIR)/toybox
+	${STRIP} $(BIN_DIR)/unstripped/toybox -o $(BIN_DIR)/toybox
 	@echo DONE!
 
-.PHONY : clean
-clean:
-	$(RM) $(OBJS)
-	$(RM) $(DEPS)

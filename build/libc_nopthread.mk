@@ -1,38 +1,21 @@
 PRJPATH=.
 
-include $(PRJPATH)/build/common.mk
+include $(PRJPATH)/build/common_bionic_libc.mk
 
 #########################################
+# libc_nopthread
+#
 # libc_common_src_files is used both by libc_nopthread and libc_ndk, 
 # but lib_ndk is not part of libc.a, so we here only consider 
 # libc_common_src_files for libc_nopthread
 
-# TBD: where this comes from? checked Android.bp but no answer yet
-INC_LOCAL = \
+CFLAGS += \
 	-Ibionic/libc/system_properties/include \
 	-Isystem/core/property_service/libpropertyinfoparser/include
 
-CFLAGS_LOCAL =
-
-CFLAGS += \
-	$(INC_LOCAL) \
-	$(INC_LIBC) \
-	$(CFLAGS_COMMON_GLOBAL) \
-	$(INC_COMMON_GLOBAL) \
-	$(CFLAGS_LIBC) \
-	$(CFLAGS_LOCAL) \
-	$(CFLAGS_COMPILER) \
-	$(CFLAGS_NOOVERRIDECLANGGLOBAL)
-
 CPPFLAGS += \
-	$(INC_LOCAL) \
-	$(INC_LIBC) \
-	$(CFLAGS_COMMON_GLOBAL) \
-	$(INC_COMMON_GLOBAL) \
-	$(CFLAGS_LIBC) \
-	$(CFLAGS_LOCAL) \
-	$(CPPFLAGS_COMPILER) \
-	$(CFLAGS_NOOVERRIDECLANGGLOBAL)
+	-Ibionic/libc/system_properties/include \
+	-Isystem/core/property_service/libpropertyinfoparser/include
 
 SRCS_C = \
 	$(SRCPATH_LIBC)/bionic/ether_aton.c \
@@ -55,24 +38,8 @@ SRCS_CPP = \
 	$(SRCPATH_LIBC)/stdio/stdio_ext.cpp \
 	$(SRCPATH_LIBC)/stdio/vfscanf.cpp
 
-OBJS = $(SRCS_C:.c=.o)
-OBJS += $(SRCS_CPP:.cpp=.o)
-DEPS = $(OBJS:.o=.o.d)
+include $(PRJPATH)/build/common_rules.mk
 
-%.o : %.cpp
-	$(RELPWD) $(CPP) $(CPPFLAGS) -MD -MF $(PRJPATH)/$@.d -o $(PRJPATH)/$@ $<
-	mv $@ $(PRJPATH)/$(OBJ_DIR)/
-	mv $@.d $(PRJPATH)/$(OBJ_DIR)/
-
-%.o : %.c
-	$(RELPWD) $(CC) $(CFLAGS) -MD -MF $(PRJPATH)/$@.d -o $(PRJPATH)/$@ $<
-	mv $@ $(PRJPATH)/$(OBJ_DIR)/
-	mv $@.d $(PRJPATH)/$(OBJ_DIR)/
-
+.DEFAULT_GOAL := all
 all : $(OBJS)
-	@echo DONE!	
-
-.PHONY : clean
-clean:
-	$(RM) $(OBJS)
-	$(RM) $(DEPS)
+	@echo DONE!

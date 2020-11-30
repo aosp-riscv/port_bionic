@@ -2,11 +2,15 @@ PRJPATH = .
 
 include $(PRJPATH)/build/common.mk
 
-m.crtend_android_android_x86_core.asflags = \
+#########################################
+# crtbrand
+# Defined: bionic/libc/Android.bp:1826:1
+
+m.crtbrand_android_riscv64_core.asflags = \
+	-DPLATFORM_SDK_VERSION=29 \
 	-target riscv64-unknown-linux-gnu \
 	-B${g.android.soong.cc.config.RISCV64GccRoot}/riscv64/bin \
 	-D__ASSEMBLY__
-
 
 AFLAGS += \
 	-Ibionic/libc/include -Ibionic/libc \
@@ -15,21 +19,17 @@ AFLAGS += \
 	${g.android.soong.cc.config.DeviceClangGlobalCflags} \
 	${g.android.soong.cc.config.RISCV64ToolchainCflags} \
 	${g.android.soong.cc.config.RISCV64VariantClangCflags} \
-	-Iexternal/libcxx/include -Iexternal/libcxxabi/include \
 	${g.android.soong.cc.config.CommonGlobalIncludes} \
 	${g.android.soong.cc.config.RISCV64IncludeFlags} \
 	${g.android.soong.cc.config.CommonNativehelperInclude} \
-	${m.crtend_android_android_riscv64_core.asflags}
+	${m.crtbrand_android_riscv64_core.asflags}
 
 SRCS_ASM = \
-	bionic/libc/arch-common/bionic/crtend.S
+	bionic/libc/arch-common/bionic/crtbrand.S
 
 include $(PRJPATH)/build/common_rules.mk
 
 .DEFAULT_GOAL := all
 all : $(OBJS)
-	@rm -f $(LIB_DIR)/crtend.o
-	@if [ ! -e $(LIB_DIR) ]; then mkdir -p $(LIB_DIR); fi
-	cp $(OBJ_DIR)/bionic/libc/arch-common/bionic/crtend.o $(LIB_DIR)/crtend.o
 	@echo DONE!
 

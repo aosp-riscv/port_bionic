@@ -2,100 +2,46 @@ PRJPATH = .
 
 include $(PRJPATH)/build/common.mk
 
-CFLAGS += \
-	-Ibionic/libc/include -Ibionic/libc \
-	-DANDROID -fmessage-length=0 -W -Wall -Wno-unused -Winit-self -Wpointer-arith \
-	-no-canonical-prefixes -DNDEBUG -UDEBUG -fno-exceptions -Wno-multichar -O2 -g \
-	-fno-strict-aliasing \
-	-fdebug-prefix-map=/proc/self/cwd= \
-	-D__compiler_offsetof=__builtin_offsetof -faddrsig -Wimplicit-fallthrough \
-	-Werror=int-conversion -Wno-reserved-id-macro -Wno-format-pedantic \
-	-Wno-unused-command-line-argument -fcolor-diagnostics -Wno-zero-as-null-pointer-constant \
-	-Wno-sign-compare -Wno-defaulted-function-deleted -Wno-inconsistent-missing-override \
-	-ffunction-sections -fdata-sections -fno-short-enums -funwind-tables \
-	-fstack-protector-strong -Wa,--noexecstack -D_FORTIFY_SOURCE=2 -Wstrict-aliasing=2 \
-	-Werror=return-type -Werror=non-virtual-dtor -Werror=address -Werror=sequence-point \
-	-Werror=date-time -Werror=format-security \
-	-nostdlibinc \
-	-Iexternal/libcxx/include -Iexternal/libcxxabi/include -Isystem/core/include \
-	-Isystem/media/audio/include -Ihardware/libhardware/include \
-	-Ihardware/libhardware_legacy/include -Ihardware/ril/include \
-	-Iframeworks/native/include -Iframeworks/native/opengl/include \
-	-Iframeworks/av/include \
-	-isystem bionic/libc/include -isystem bionic/libc/kernel/uapi \
-	-isystem bionic/libc/kernel/uapi/asm-riscv -isystem bionic/libc/kernel/android/scsi \
-	-isystem bionic/libc/kernel/android/uapi \
-	-Ilibnativehelper/include_jni \
+###############################################
+# crtbegin_static
+# Defined: bionic/libc/Android.bp:1893:1
+#
+# together with crtbegin_static1, which is ONLY used by crtbegin_static
+# Defined: bionic/libc/Android.bp:1866:1
+
+m.crtbegin_static1_android_x86_core.cflags = \
 	-Wno-gcc-compat -Wall -Werror -fno-addrsig \
 	-target riscv64-unknown-linux-gnu \
-	-B/opt/riscv64/bin \
-	-DANDROID_STRICT -D_USING_LIBCXX -std=gnu99 \
-	-Werror=int-to-pointer-cast -Werror=pointer-to-int-cast \
-	-Werror=address-of-temporary -Werror=return-type -Wno-tautological-constant-compare \
-	-Wno-tautological-type-limit-compare -Wno-tautological-unsigned-enum-zero-compare \
-	-Wno-tautological-unsigned-zero-compare -Wno-c++98-compat-extra-semi \
-	-Wno-return-std-move-in-c++11
+	-B${g.android.soong.cc.config.RISCV64GccRoot}/riscv64/bin \
+	-DANDROID_STRICT -D_USING_LIBCXX
 
-AFLAGS += \
+CFLAGS += \
 	-Ibionic/libc/include -Ibionic/libc \
-	-DANDROID -fmessage-length=0 -W -Wall -Wno-unused -Winit-self -Wpointer-arith \
-	-no-canonical-prefixes -DNDEBUG -UDEBUG -fno-exceptions -Wno-multichar -O2 -g \
-	-fno-strict-aliasing \
-	-fdebug-prefix-map=/proc/self/cwd= \
-	-D__compiler_offsetof=__builtin_offsetof -faddrsig -Wimplicit-fallthrough \
-	-Werror=int-conversion -Wno-reserved-id-macro -Wno-format-pedantic \
-	-Wno-unused-command-line-argument -fcolor-diagnostics \
-	-Wno-zero-as-null-pointer-constant -Wno-sign-compare \
-	-Wno-defaulted-function-deleted -Wno-inconsistent-missing-override \
-	-ffunction-sections -fdata-sections -fno-short-enums -funwind-tables \
-	-fstack-protector-strong -Wa,--noexecstack -D_FORTIFY_SOURCE=2 \
-	-Wstrict-aliasing=2 -Werror=return-type -Werror=non-virtual-dtor \
-	-Werror=address -Werror=sequence-point -Werror=date-time -Werror=format-security \
-	-nostdlibinc \
-	-Isystem/core/include -Isystem/media/audio/include -Ihardware/libhardware/include \
-	-Ihardware/libhardware_legacy/include -Ihardware/ril/include \
-	-Iframeworks/native/include -Iframeworks/native/opengl/include \
-	-Iframeworks/av/include \
-	-isystem bionic/libc/include -isystem bionic/libc/kernel/uapi \
-	-isystem bionic/libc/kernel/uapi/asm-riscv \
-	-isystem bionic/libc/kernel/android/scsi \
-	-isystem bionic/libc/kernel/android/uapi \
-	-Ilibnativehelper/include_jni \
-	-DPLATFORM_SDK_VERSION=29 \
-	-target riscv64-unknown-linux-gnu \
-	-B/opt/riscv64/bin \
-	-D__ASSEMBLY__
-
-SRCS_ASM = \
-	bionic/libc/arch-common/bionic/crtbrand.S
+	${g.android.soong.cc.config.RISCV64ClangCflags} \
+	${g.android.soong.cc.config.CommonClangGlobalCflags} \
+	${g.android.soong.cc.config.DeviceClangGlobalCflags} \
+	${g.android.soong.cc.config.RISCV64ToolchainCflags} \
+	${g.android.soong.cc.config.RISCV64VariantClangCflags} \
+	-Iexternal/libcxx/include -Iexternal/libcxxabi/include \
+	${g.android.soong.cc.config.CommonGlobalIncludes} \
+	${g.android.soong.cc.config.RISCV64IncludeFlags} \
+	${g.android.soong.cc.config.CommonNativehelperInclude} \
+	${m.crtbegin_static1_android_riscv64_core.cflags} \
+	-std=gnu99 \
+	${g.android.soong.cc.config.CommonGlobalConlyflags} \
+	${g.android.soong.cc.config.NoOverrideClangGlobalCflags}
 
 SRCS_C = \
 	bionic/libc/arch-riscv64/bionic/crtbegin.c
 
-SRCS_CPP =
+include $(PRJPATH)/build/common_rules.mk
 
-OBJS = $(SRCS_ASM:.S=.o)
-OBJS += $(SRCS_C:.c=.o)
-OBJS += $(SRCS_CPP:.cpp=.o)
-
-DEPS = $(OBJS:.o=.o.d)
-
-%.o : %.c
-	$(RELPWD) $(CC) $(CFLAGS) -MD -MF $(PRJPATH)/$@.d -o $(PRJPATH)/$@ $<
-	mv $@ $(PRJPATH)/$(OBJ_DIR)/
-	mv $@.d $(PRJPATH)/$(OBJ_DIR)/
-
-%.o : %.S
-	$(RELPWD) $(CC) $(AFLAGS) -MD -MF $(PRJPATH)/$@.d -o $(PRJPATH)/$@ $<
-	mv $@ $(PRJPATH)/$(OBJ_DIR)/
-	mv $@.d $(PRJPATH)/$(OBJ_DIR)/
-
+.DEFAULT_GOAL := all
 all : $(OBJS)
-	$(CPP) -nostdlib -no-pie -Wl,-r $(OBJ_DIR)/crtbegin.o $(OBJ_DIR)/crtbrand.o -o $(OBJ_DIR)/crtbegin_static.o -target riscv64-unknown-linux-gnu -B/opt/riscv64/bin
-	rm -f $(LIB_DIR)/crtbegin_static.o && cp $(OBJ_DIR)/crtbegin_static.o $(LIB_DIR)/crtbegin_static.o
+	@rm -f $(LIB_DIR)/crtbegin_static.o
+	@if [ ! -e $(LIB_DIR) ]; then mkdir -p $(LIB_DIR); fi
+	$(CPP) -nostdlib -no-pie -Wl,-r \
+		$(OBJ_DIR)/bionic/libc/arch-riscv64/bionic/crtbegin.o \
+		$(OBJ_DIR)/bionic/libc/arch-common/bionic/crtbrand.o \
+		-o $(LIB_DIR)/crtbegin_static.o -target riscv64-unknown-linux-gnu -B/opt/riscv64/bin
 	@echo DONE!
-
-.PHONY : clean
-clean:
-	$(RM) $(OBJS)
-	$(RM) $(DEPS)
