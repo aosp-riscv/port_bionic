@@ -10,3 +10,15 @@
 [submodule "external/mksh"]
 	path = external/mksh
 	url = https://github.com/aosp-riscv/platform_external_mksh.git
+[submodule "external/zlib"]
+	path = external/zlib
+	url = https://github.com/aosp-riscv/platform_external_zlib.git
+[submodule "external/libcxx"]
+	path = external/libcxx
+	url = https://github.com/aosp-riscv/platform_external_libcxx.git
+[submodule "external/libcxxabi"]
+	path = external/libcxxabi
+	url = https://github.com/aosp-riscv/platform_external_libcxxabi.git
+[submodule "system/core"]
+	path = system/core
+	url = https://github.com/aosp-riscv/platform_system_core.git
