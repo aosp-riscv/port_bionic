@@ -22,8 +22,8 @@ m.libstdc___android_riscv64_core_shared.cppflags = \
 	-fno-rtti \
 	${g.android.soong.cc.config.RISCV64ClangCppflags}
 
-m.libstdc___android_x86_core_static.cflags = ${m.libstdc___android_riscv64_core_shared.cflags}
-m.libstdc___android_x86_core_static.cppflags = ${m.libstdc___android_riscv64_core_shared.cppflags}
+m.libstdc___android_riscv64_core_static.cflags = ${m.libstdc___android_riscv64_core_shared.cflags}
+m.libstdc___android_riscv64_core_static.cppflags = ${m.libstdc___android_riscv64_core_shared.cppflags}
 
 ifeq (${VARIANT},dynamic)
 CPPFLAGS += \

@@ -2,6 +2,23 @@ OUTPUT_DIR = out
 
 all : toybox mksh
 
+crt: crtbegin_static crtend
+
+crtbrand :
+	@echo "Building $@ ..."
+	make -f build/crtbrand.mk
+	@echo "Building $@ DONE!"
+
+crtbegin_static: crtbrand
+	@echo "Building $@ ..."
+	make -f build/crtbegin_static.mk
+	@echo "Building $@ DONE!"
+
+crtend:
+	@echo "Building $@ ..."
+	make -f build/crtend.mk
+	@echo "Building $@ DONE!"
+
 libc_bionic:
 	@echo "Building $@ ..."
 	make -f build/libc_bionic.mk
@@ -92,7 +109,7 @@ libc_syscalls:
 	make -f build/libc_syscalls.mk
 	@echo "Building $@ DONE!"
 
-libstdcpp:
+libstdcpp_static:
 	@echo "Building $@ ..."
 	make -f build/libstdcpp.mk VARIANT=static
 	@echo "Building $@ DONE!"
@@ -115,7 +132,7 @@ libc_nopthread: \
         libc_stack_protector \
         libc_syscalls \
         libc_tzcode \
-        libstdcpp
+        libstdcpp_static
 	@echo "Building $@ ..."
 	make -f build/libc_nopthread.mk
 	@echo "Building $@ DONE!"
@@ -127,16 +144,33 @@ libc_pthread:
 
 libc_common: libc_nopthread libc_pthread
 
+# read bionic/libc/Android.bp
+# libc_common_static/libc_common_shared looks like an encapsulation
+# for libc_common, just adding some extra handler for 32bit x86/arm
 libc_common_static: libc_common
+libc_common_shared: libc_common
 
 libc_init_static:
 	@echo "Building $@ ..."
 	make -f build/libc_init_static.mk
 	@echo "Building $@ DONE!"
 
+libc_init_dynamic:
+	@echo "Building $@ ..."
+	make -f build/libc_init_dynamic.mk
+	@echo "Building $@ DONE!"
+
+# libc_sources_static/libc_sources_shared may better merged into
+# libc_static/libc_shared, but now, just keep it here, we will move to
+# AOSP/Soong soon later
 libc_sources_static:
 	@echo "Building $@ ..."
 	make -f build/libc_sources_static.mk
+	@echo "Building $@ DONE!"
+
+libc_sources_shared:
+	@echo "Building $@ ..."
+	make -f build/libc_sources_shared.mk
 	@echo "Building $@ DONE!"
 
 libjemalloc5:
@@ -144,6 +178,7 @@ libjemalloc5:
 	make -f build/libjemalloc5.mk
 	@echo "Building $@ DONE!"
 
+# TBD: libc_static.mk and libc_shared.mk better to merge into one
 libc_static: \
 		libc_sources_static \
 		libc_init_static \
@@ -153,21 +188,70 @@ libc_static: \
 	make -f build/libc_static.mk
 	@echo "Building $@ DONE!"
 
-crt: crtbegin_static crtend
-
-crtbrand :
+libc_shared: \
+		libc_sources_shared \
+		libc_init_dynamic \
+		libc_common_shared \
+		libjemalloc5
 	@echo "Building $@ ..."
-	make -f build/crtbrand.mk
+	make -f build/libc_shared.mk
 	@echo "Building $@ DONE!"
 
-crtbegin_static: crtbrand
+libc_nomalloc: \
+		libc_init_static \
+		libc_common_static
 	@echo "Building $@ ..."
-	make -f build/crtbegin_static.mk
+	make -f build/libc_nomalloc.mk
 	@echo "Building $@ DONE!"
 
-crtend:
+libziparchive:
 	@echo "Building $@ ..."
-	make -f build/crtend.mk
+	make -f build/libziparchive.mk
+	@echo "Building $@ DONE!"
+
+libutils:
+	@echo "Building $@ ..."
+	make -f build/libutils.mk
+	@echo "Building $@ DONE!"
+
+libz:
+	@echo "Building $@ ..."
+	make -f build/libz.mk
+	@echo "Building $@ DONE!"
+
+liblinker_malloc:
+	@echo "Building $@ ..."
+	make -f build/liblinker_malloc.mk
+	@echo "Building $@ DONE!"
+
+libasync_safe:
+	@echo "Building $@ ..."
+	make -f build/libasync_safe.mk
+	@echo "Building $@ DONE!"
+
+libbase:
+	@echo "Building $@ ..."
+	make -f build/libbase.mk
+	@echo "Building $@ DONE!"
+
+liblog:
+	@echo "Building $@ ..."
+	make -f build/liblog.mk
+	@echo "Building $@ DONE!"
+
+libc++_static:
+	@echo "Building $@ ..."
+	make -f build/libcxx_static.mk
+	@echo "Building $@ DONE!"
+
+libc++abi:
+	@echo "Building $@ ..."
+	make -f build/libcxxabi.mk
+	@echo "Building $@ DONE!"
+
+linker: libziparchive libutils libz liblinker_malloc libasync_safe libbase liblog libc++_static libc++abi libc_nomalloc
+	@echo "Building $@ ..."
+	make -f build/linker.mk
 	@echo "Building $@ DONE!"
 
 test: env_setup

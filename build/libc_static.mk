@@ -30,6 +30,9 @@ ALL_MODULES = \
 MODULES_1 = $(addprefix build/,${ALL_MODULES})
 MODULES = $(addsuffix .mk,${MODULES_1})
 
+# Reference:build command from log:
+# prebuilts/clang/host/linux-x86/clang-r353983c1/bin/llvm-ar crsD -format=gnu out/soong/.intermediates/bionic/libc/libc/android_x86_core_static/libc.a @out/soong/.intermediates/bionic/libc/libc/android_x86_core_static/libc.a.rsp
+
 .DEFAULT_GOAL := all
 all : clean
 	@if [ ! -e $(LIB_DIR) ]; then mkdir -p $(LIB_DIR); fi
@@ -40,4 +43,4 @@ all : clean
 .PHONY : clean
 clean:
 	$(RM) $(LIB_DIR)/static/libc.a
-	$(RM) ${LIB_DIR}/libc.a.rsp
+	$(RM) ${LIB_DIR}/static/libc.a.rsp
