@@ -10,21 +10,25 @@ include $(PRJPATH)/build/common.mk
 # Factory: android/soong/android.ModuleFactoryAdaptor.func1
 # Defined: system/core/libutils/Android.bp:121:1
 
-m.libutils_android_x86_core_static.cflags = \
+m.libutils_android_riscv64_core_static.cflags = \
 	-Wall -Werror -fvisibility=protected \
 	-target riscv64-unknown-linux-gnu \
 	-B${g.android.soong.cc.config.RISCV64GccRoot}/riscv64/bin \
-	-DANDROID_STRICT -fPIC -D_USING_LIBCXX \
+	-DANDROID_STRICT -fPIC -D_USING_LIBCXX
+
+ifeq (${CONFIG_UBSAN},y)
+m.libutils_android_riscv64_core_static.cflags += \
 	-fsanitize=integer -fsanitize-trap=all -ftrap-function=abort \
 	-fsanitize-minimal-runtime -fno-sanitize-trap=integer,undefined \
 	-fno-sanitize-recover=integer,undefined -fno-sanitize=implicit-integer-sign-change
+endif
 
-m.libutils_android_x86_core_static.cppflags = \
+m.libutils_android_riscv64_core_static.cppflags = \
 	-std=gnu++17 \
 	${g.android.soong.cc.config.CommonClangGlobalCppflags} \
 	${g.android.soong.cc.config.DeviceGlobalCppflags} \
 	-fno-rtti \
-	${g.android.soong.cc.config.X86ClangCppflags}
+	${g.android.soong.cc.config.RISCV64ClangCppflags}
 
 CPPFLAGS += \
 	-Isystem/core/libutils \

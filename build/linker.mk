@@ -23,7 +23,7 @@ m.linker_android_riscv64_core.cppflags = \
 	${g.android.soong.cc.config.CommonClangGlobalCppflags} \
 	${g.android.soong.cc.config.DeviceGlobalCppflags} \
 	-Wold-style-cast -DUSE_LD_CONFIG_FILE -fno-rtti \
-	${g.android.soong.cc.config.X86ClangCppflags}
+	${g.android.soong.cc.config.RISCV64ClangCppflags}
 
 m.linker_android_riscv64_core.asflags = \
 	-fno-stack-protector \
@@ -177,47 +177,67 @@ SRCS_ASM = \
 
 include $(PRJPATH)/build/common_rules.mk
 
+# following flags are not included yet
+#	-Wl,--version-script,bionic/linker/linker.generic.map
+#	${g.android.soong.cc.config.ClangAsanLibDir}/libclang_rt.ubsan_minimal-i686-android.a
+#	-Wl,--exclude-libs,libclang_rt.ubsan_minimal-i686-android.a
+#
+# -Bsymbolic: https://docs.oracle.com/cd/E19957-01/806-0641/chapter4-16/index.html
+LDFLAGS = \
+	-target riscv64-unknown-linux-gnu \
+	-B${g.android.soong.cc.config.RISCV64GccRoot}/riscv64/bin \
+	${g.android.soong.cc.config.DeviceGlobalLldflags} \
+	-Wl,--pack-dyn-relocs=android+relr \
+	-Wl,--use-android-relr-tags \
+	-Wl,--no-undefined \
+	${g.android.soong.cc.config.RISCV64Lldflags} \
+	-shared \
+	-Wl,-Bsymbolic \
+	-Wl,--exclude-libs,ALL \
+	-Wl,-soname,ld-android.so \
+	${g.android.soong.cc.config.RISCV64ToolchainLdflags} \
+	-nostdlib \
+	-Bstatic \
+	-Wl,--gc-sections
+
+# following are differences against current aosp
+# - libdebuggerd_handler_fallback.a is not included: only see related code in
+#   linker_main() and embraced with __ANDROID__, hope we don't need it in general,
+#   otherwise will involve more dependencies if we need to build this lib
+# - libclang_rt.builtins-i686-android.a is not included, have not investigated
+#   it since it is provided by google prebuilt tools
+# - libatomic.a is not included, have not investigated it since it is provided
+#   by google prebuilt tools
+# - libgcc_stripped currently is directly replaced with libgcc from gnu-tools
+# - libc++abi.a is added, just due to we make the libc++abi.a and libc++_static.a
+#   as two separated libs, aosp combined them two in one libc++_static.a
+# - libgcc_eh.a is added, due to libc++ may need such functions as
+#   _Unwind_Resume()/_Unwind_RaiseException()/..., tell me what are they doing?
+LIBFLAGS = \
+	$(LIB_DIR)/static/libm.a \
+	$(LIB_DIR)/static/libziparchive.a \
+	$(LIB_DIR)/static/libutils.a \
+	$(LIB_DIR)/static/libz.a \
+	$(LIB_DIR)/static/liblinker_malloc.a \
+	$(LIB_DIR)/static/libasync_safe.a \
+	$(LIB_DIR)/static/libbase.a \
+	$(LIB_DIR)/static/liblog.a \
+	$(LIB_DIR)/static/libc++_static.a \
+	$(LIB_DIR)/static/libc++abi.a \
+	-Wl,--start-group \
+	$(LIB_DIR)/static/libc_nomalloc.a \
+	/opt/riscv64/lib/gcc/riscv64-unknown-linux-gnu/10.1.0/libgcc.a \
+	/opt/riscv64/lib/gcc/riscv64-unknown-linux-gnu/10.1.0/libgcc_eh.a \
+	-Wl,--end-group
+
+# command = ${ldCmd} ${crtBegin} @${out}.rsp ${libFlags} ${crtEnd} -o ${out} ${ldFlags}
 .DEFAULT_GOAL := all
 all : $(OBJS)
+	@rm -f $(LIB_DIR)/shared/linker
+	@rm -f $(LIB_DIR)/shared/linker.rsp
 	@if [ ! -e $(LIB_DIR) ]; then mkdir -p $(LIB_DIR); fi
 	@if [ ! -e $(LIB_DIR)/shared ]; then mkdir -p $(LIB_DIR)/shared; fi
-	${LD} \
-		out/obj/bionic/linker/linker_libc_support.o \
-		out/obj/bionic/linker/dlfcn.o \
-		out/obj/bionic/linker/linker.o \
-		out/obj/bionic/linker/linker_block_allocator.o \
-		out/obj/bionic/linker/linker_dlwarning.o \
-		out/obj/bionic/linker/linker_cfi.o \
-		out/obj/bionic/linker/linker_config.o \
-		out/obj/bionic/linker/linker_gdb_support.o \
-		out/obj/bionic/linker/linker_globals.o \
-		out/obj/bionic/linker/linker_libcxx_support.o \
-		out/obj/bionic/linker/linker_main.o \
-		out/obj/bionic/linker/linker_namespaces.o \
-		out/obj/bionic/linker/linker_logger.o \
-		out/obj/bionic/linker/linker_mapped_file_fragment.o \
-		out/obj/bionic/linker/linker_phdr.o \
-		out/obj/bionic/linker/linker_sdk_versions.o \
-		out/obj/bionic/linker/linker_soinfo.o \
-		out/obj/bionic/linker/linker_tls.o \
-		out/obj/bionic/linker/linker_utils.o \
-		out/obj/bionic/linker/rt.o \
-		out/obj/bionic/linker/arch/riscv64/begin.o \
-		out/lib/static/libziparchive.a \
-		out/lib/static/libutils.a \
-		out/lib/static/libz.a \
-		out/lib/static/liblinker_malloc.a \
-		out/lib/static/libasync_safe.a \
-		out/lib/static/libbase.a \
-		out/lib/static/liblog.a \
-		out/lib/static/libc++_static.a \
-		out/lib/static/libc++abi.a \
-		--start-group \
-		out/lib/static/libc_nomalloc.a \
-		--end-group \
-		-nostdlib -shared \
-		-o $(LIB_DIR)/shared/linker 
+	@echo $(OUTPUT_OBJS) > $(LIB_DIR)/shared/linker.rsp
+	${CPP} @$(LIB_DIR)/shared/linker.rsp ${LIBFLAGS} -o $(LIB_DIR)/shared/linker64 ${LDFLAGS}
 	@echo DONE!
 
-#		out/lib/static/libdebuggerd_handler_fallback.a \
-#		out/lib/static/libm.a \

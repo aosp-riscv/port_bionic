@@ -77,4 +77,8 @@ include $(PRJPATH)/build/common_rules.mk
 
 .DEFAULT_GOAL := all
 all : $(OBJS)
+	@if [ ! -e $(LIB_DIR) ]; then mkdir -p $(LIB_DIR); fi
+	@if [ ! -e $(LIB_DIR)/static ]; then mkdir -p $(LIB_DIR)/static; fi
+	@echo $(OUTPUT_OBJS) >> $(LIB_DIR)/static/libjemalloc5.a.rsp
+	llvm-ar crsD -format=gnu $(LIB_DIR)/static/libjemalloc5.a @${LIB_DIR}/static/libjemalloc5.a.rsp
 	@echo DONE!

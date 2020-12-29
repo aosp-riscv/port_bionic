@@ -2,7 +2,7 @@ g.android.soong.cc.config.RISCV64GccRoot = /opt
 
 g.android.soong.cc.config.ClangBin = /home/u/ws/llvm-project/install/bin
 
-g.android.soong.cc.config.RISCV64ClangCflags =
+g.android.soong.cc.config.RISCV64ClangCflags = -mno-relax
 
 g.android.soong.cc.config.RISCV64ClangCppflags = 
 
@@ -21,7 +21,7 @@ g.android.soong.cc.config.CommonClangGlobalCflags = \
 	-DANDROID -fmessage-length=0 -W -Wall -Wno-unused -Winit-self \
 	-Wpointer-arith -no-canonical-prefixes -DNDEBUG -UDEBUG -fno-exceptions \
 	-Wno-multichar -O2 -g -fno-strict-aliasing \
-	-fdebug-prefix-map=/proc/self/cwd= ${g.android.soong.cc.config.ClangExtraCflags}
+	-fdebug-prefix-map=/proc/self/cwd= ${g.android.soong.cc.config.ClangExtraCflags} \
 
 g.android.soong.cc.config.CommonClangGlobalCppflags = \
 	-Wsign-promo \
@@ -41,6 +41,8 @@ g.android.soong.cc.config.DeviceGlobalCppflags = \
 
 g.android.soong.cc.config.RISCV64ToolchainCflags =
 
+g.android.soong.cc.config.RISCV64ToolchainLdflags =
+
 g.android.soong.cc.config.RISCV64VariantClangCflags =
 
 g.android.soong.cc.config.CommonGlobalIncludes = \
@@ -54,6 +56,9 @@ g.android.soong.cc.config.RISCV64IncludeFlags = \
 	-isystem bionic/libc/kernel/uapi/asm-riscv \
 	-isystem bionic/libc/kernel/android/scsi \
 	-isystem bionic/libc/kernel/android/uapi
+
+g.android.soong.cc.config.RISCV64Lldflags = \
+	-Wl,--hash-style=gnu
 
 g.android.soong.cc.config.CommonNativehelperInclude = \
 	-Ilibnativehelper/include_jni
@@ -70,6 +75,24 @@ g.android.soong.cc.config.ClangExtraNoOverrideCflags = \
 g.android.soong.cc.config.NoOverrideClangGlobalCflags = \
 	-Werror=int-to-pointer-cast -Werror=pointer-to-int-cast \
 	${g.android.soong.cc.config.ClangExtraNoOverrideCflags}
+
+
+# TBD:
+# - currently still use libgcc.a from gcc, but seems aosp use it's self
+#   prebuilt libgcc.a
+# - have not involved libgcc_stripped.a, just keep the exclude-libs for it, I
+#   hope it does nothing impact
+g.android.soong.cc.config.DeviceGlobalLldflags = \
+	-Wl,-z,noexecstack \
+	-Wl,-z,relro \
+	-Wl,-z,now \
+	-Wl,--build-id=md5 \
+	-Wl,--warn-shared-textrel \
+	-Wl,--fatal-warnings \
+	-Wl,--no-undefined-version \
+	-Wl,--exclude-libs,libgcc.a \
+	-Wl,--exclude-libs,libgcc_stripped.a \
+	-fuse-ld=lld
 
 OUTPUT_DIR = out
 
@@ -97,3 +120,8 @@ CC = ${g.android.soong.cc.config.ClangBin}/clang
 CPP = ${g.android.soong.cc.config.ClangBin}/clang++
 LD = /opt/riscv64/bin/riscv64-unknown-linux-gnu-ld
 STRIP = /opt/riscv64/bin/riscv64-unknown-linux-gnu-strip
+
+# UBSAN stands for "The Undefined Behavior Sanitizer".
+# Those ubsan_handler_xxx() are implemented in libclang_rt.ubsan_minimal-i686-android.a.
+# We have not ported this lib and exclude it when linking for bionic/linker.
+CONFIG_UBSAN = n

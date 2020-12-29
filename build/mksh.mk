@@ -56,11 +56,6 @@ CFLAGS += \
 		${g.android.soong.cc.config.CommonGlobalConlyflags} \
 		${g.android.soong.cc.config.NoOverrideClangGlobalCflags}
 
-
-# TBD: I removed this option, I wonder why we need this
-#    -D_USING_LIBCXX
-
-
 SRCS_C = \
 	external/mksh/src/lalloc.c \
 	external/mksh/src/edit.c \
@@ -80,6 +75,12 @@ SRCS_C = \
 
 include $(PRJPATH)/build/common_rules.mk
 
+# Notice, can not use dynamiclly link to run sh.
+# The reason is, in currenty implementation, /proc has not been mount when
+# the sh is called at the first time. While aosp linker will check exe info
+# through the /proc/self/exe. So when init will use sh to parse rcS file and
+# try to mount the /proc (which means /proc does not exist at that time)
+# The same reason for init(as to toybox).
 .DEFAULT_GOAL := all
 all : $(OBJS)
 	@rm -f $(BIN_DIR)/unstripped/sh

@@ -3,54 +3,72 @@ PRJPATH = .
 include $(PRJPATH)/build/common.mk
 
 ######################################
-# libc shared
+# Module:  libc
+# Variant: android_x86_core_shared
+# Type:    cc_library
+# Factory: android/soong/android.ModuleFactoryAdaptor.func1
 # Defined: bionic/libc/Android.bp:1528:1
+#
 # libc_sources_shared part defined in libc_sources_shared.mk
 
-ALL_MODULES = \
-	libc_sources_shared \
-	libc_init_dynamic \
-	libc_nopthread \
-	libc_pthread \
-	libc_bionic \
-	libc_bionic_ndk \
-	libsystemproperties \
-	libpropertyinfoparser \
-	libc_dns \
-	libc_fortify \
-	libc_freebsd \
-	libc_freebsd_large_stack \
-	libc_gdtoa \
-	libc_malloc \
-	libc_netbsd \
-	libc_openbsd \
-	libc_openbsd_large_stack \
-	libc_openbsd_ndk \
-	libc_stack_protector \
-	libc_syscalls \
-	libc_tzcode \
-	libstdcpp \
-	libjemalloc5
+# Following flags are not included till now
+# 	-Wl,--version-script,out/soong/.intermediates/bionic/libc/libc.x86.map/gen/libc.x86.map \
+# 	-Wl,--symbol-ordering-file,bionic/libc/symbol_ordering
+LDFLAGS = \
+	-nostdlib \
+	-Wl,--gc-sections \
+	-shared \
+	-Wl,-soname,libc.so \
+	-target riscv64-unknown-linux-gnu \
+	-B${g.android.soong.cc.config.RISCV64GccRoot}/riscv64/bin \
+	${g.android.soong.cc.config.DeviceGlobalLldflags} \
+	-Wl,--pack-dyn-relocs=none \
+	-Wl,--no-undefined \
+	${g.android.soong.cc.config.RISCV64Lldflags} \
+	-Wl,-z,muldefs \
+	-Wl,--hash-style=both \
+	${g.android.soong.cc.config.RISCV64ToolchainLdflags}
 
-MODULES_1 = $(addprefix build/,${ALL_MODULES})
-MODULES = $(addsuffix .mk,${MODULES_1})
+# notice the creation of libc.so is totally different against that for libc.a
+# libc.a is a simple archivement for all obj files, but for libc.so, it will
+# include every object file in the archives (.a), which are embraced by 
+# --whole-archive and --no-whole-archive), plus some other (.a) files which 
+# will be extracted only those obj files required.
+# Following archives are fully included:
+# - libc_sources_shared, which is included as separated obj files
+# - libjemalloc5.a
+# - libc_init_dynamic.a
+# - libc_common_shared.a, which is the major part of libc
+#
+# Following libs are not included!
+# libclang_rt.builtins-i686-android.a
+# libatomic.a
+# libgcc_stripped.a: replaced with libgcc.a & libgcc_eh.a
+LIBFLAGS = \
+	-Wl,--whole-archive \
+	$(LIB_DIR)/static/libjemalloc5.a \
+	$(LIB_DIR)/static/libc_init_dynamic.a \
+	$(LIB_DIR)/static/libc_common_shared.a \
+	-Wl,--no-whole-archive \
+	$(LIB_DIR)/static/libdl_android.a \
+	/opt/riscv64/lib/gcc/riscv64-unknown-linux-gnu/10.1.0/libgcc.a \
+	/opt/riscv64/lib/gcc/riscv64-unknown-linux-gnu/10.1.0/libgcc_eh.a \
+	$(LIB_DIR)/shared/ld-android.so \
+	$(LIB_DIR)/shared/libdl.so \
 
 .DEFAULT_GOAL := all
 all : clean
 	@if [ ! -e $(LIB_DIR) ]; then mkdir -p $(LIB_DIR); fi
 	@if [ ! -e $(LIB_DIR)/shared ]; then mkdir -p $(LIB_DIR)/shared; fi
-	@for m in $(MODULES); do $(MAKE) --no-print-directory -f $$m dumpobjs PATH_DUMPOBJS=$(LIB_DIR)/shared/libc.so.rsp || exit "$$?"; done
-	riscv64-unknown-linux-gnu-gcc \
+	@$(MAKE) --no-print-directory -f build/libc_sources_shared.mk dumpobjs PATH_DUMPOBJS=$(LIB_DIR)/shared/libc.so.rsp
+	${CPP} \
 		@${LIB_DIR}/shared/libc.so.rsp \
-		-nostdlib -Wl,--gc-sections -shared -Wl,-soname,libc.so \
-		-o $(LIB_DIR)/shared/libc.so 
-#	llvm-ar crsD -format=gnu $(LIB_DIR)/static/libc.a @${LIB_DIR}/static/libc.a.rsp
+		${LIBFLAGS} \
+		-o $(LIB_DIR)/shared/libc.so \
+		${LDFLAGS}
 
 .PHONY : clean
 clean:
 	$(RM) $(LIB_DIR)/shared/libc.so
 	$(RM) ${LIB_DIR}/shared/libc.so.rsp
 
-# Following is build command for libc.so
-# TBD: check it carefully and understand it
-# [7869/8669] prebuilts/clang/host/linux-x86/clang-r353983c1/bin/clang++  @out/soong/.intermediates/bionic/libc/libc/android_x86_core_shared/unstripped/libc.so.rsp -Wl,--whole-archive  out/soong/.intermediates/external/jemalloc_new/libjemalloc5/android_x86_core_static/libjemalloc5.a out/soong/.intermediates/bionic/libc/libc_init_dynamic/android_x86_core_static/libc_init_dynamic.a out/soong/.intermediates/bionic/libc/libc_common_shared/android_x86_core_static/libc_common_shared.a -Wl,--no-whole-archive  out/soong/.intermediates/bionic/libdl/libdl_android/android_x86_core_static/libdl_android.a prebuilts/clang/host/linux-x86/clang-r353983c1/lib64/clang/9.0.3/lib/linux/libclang_rt.builtins-i686-android.a prebuilts/gcc/linux-x86/x86/x86_64-linux-android-4.9/x86_64-linux-android/lib/libatomic.a out/soong/.intermediates/build/soong/libgcc_stripped/android_x86_core_static/libgcc_stripped.a out/soong/.intermediates/bionic/linker/ld-android/android_x86_core_shared/ld-android.so out/soong/.intermediates/bionic/libdl/libdl/android_x86_core_shared_10000/libdl.so  -o out/soong/.intermediates/bionic/libc/libc/android_x86_core_shared/unstripped/libc.so -nostdlib -Wl,--gc-sections -shared -Wl,-soname,libc.so -target i686-linux-android -Bprebuilts/gcc/linux-x86/x86/x86_64-linux-android-4.9/x86_64-linux-android/bin -Wl,-z,noexecstack -Wl,-z,relro -Wl,-z,now -Wl,--build-id=md5 -Wl,--warn-shared-textrel -Wl,--fatal-warnings -Wl,--no-undefined-version -Wl,--exclude-libs,libgcc.a -Wl,--exclude-libs,libgcc_stripped.a -fuse-ld=lld -Wl,--pack-dyn-relocs=none -Wl,--no-undefined -Wl,--hash-style=gnu -Wl,-z,muldefs -Wl,--hash-style=both -m32 -Wl,--version-script,out/soong/.intermediates/bionic/libc/libc.x86.map/gen/libc.x86.map -Wl,--symbol-ordering-file,bionic/libc/symbol_ordering

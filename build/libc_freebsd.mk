@@ -22,19 +22,26 @@ SRCS_C = \
 	$(SRCPATH_LIBC_FREEBSD)/lib/libc/string/wcpcpy.c \
 	$(SRCPATH_LIBC_FREEBSD)/lib/libc/string/wcpncpy.c \
 	$(SRCPATH_LIBC_FREEBSD)/lib/libc/string/wcscasecmp.c \
+	$(SRCPATH_LIBC_FREEBSD)/lib/libc/string/wcscat.c \
+	$(SRCPATH_LIBC_FREEBSD)/lib/libc/string/wcschr.c \
+	$(SRCPATH_LIBC_FREEBSD)/lib/libc/string/wcscmp.c \
+	$(SRCPATH_LIBC_FREEBSD)/lib/libc/string/wcscpy.c \
 	$(SRCPATH_LIBC_FREEBSD)/lib/libc/string/wcscspn.c \
 	$(SRCPATH_LIBC_FREEBSD)/lib/libc/string/wcsdup.c \
 	$(SRCPATH_LIBC_FREEBSD)/lib/libc/string/wcslcat.c \
+	$(SRCPATH_LIBC_FREEBSD)/lib/libc/string/wcslen.c \
 	$(SRCPATH_LIBC_FREEBSD)/lib/libc/string/wcsncasecmp.c \
 	$(SRCPATH_LIBC_FREEBSD)/lib/libc/string/wcsncmp.c \
 	$(SRCPATH_LIBC_FREEBSD)/lib/libc/string/wcsncpy.c \
 	$(SRCPATH_LIBC_FREEBSD)/lib/libc/string/wcsnlen.c \
 	$(SRCPATH_LIBC_FREEBSD)/lib/libc/string/wcsncat.c \
 	$(SRCPATH_LIBC_FREEBSD)/lib/libc/string/wcspbrk.c \
+	$(SRCPATH_LIBC_FREEBSD)/lib/libc/string/wcsrchr.c \
 	$(SRCPATH_LIBC_FREEBSD)/lib/libc/string/wcsspn.c \
 	$(SRCPATH_LIBC_FREEBSD)/lib/libc/string/wcsstr.c \
 	$(SRCPATH_LIBC_FREEBSD)/lib/libc/string/wcstok.c \
 	$(SRCPATH_LIBC_FREEBSD)/lib/libc/string/wmemchr.c \
+	$(SRCPATH_LIBC_FREEBSD)/lib/libc/string/wmemcmp.c \
 	$(SRCPATH_LIBC_FREEBSD)/lib/libc/string/wmemcpy.c \
 	$(SRCPATH_LIBC_FREEBSD)/lib/libc/string/wmemmove.c \
 	$(SRCPATH_LIBC_FREEBSD)/lib/libc/string/wmemset.c

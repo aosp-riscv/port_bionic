@@ -17,8 +17,6 @@ CPPFLAGS += \
 	-Ibionic/libc/upstream-openbsd/android/include \
 	-Ibionic/libc/upstream-openbsd/lib/libc/include
 
-# refer x86, upstream-openbsd/lib/libc/gdtoa/strtorQ.c
-# is not included, but for riscv64 this is needed!
 SRCS_C_1 = \
 	upstream-openbsd/lib/libc/gdtoa/dmisc.c \
 	upstream-openbsd/lib/libc/gdtoa/dtoa.c \

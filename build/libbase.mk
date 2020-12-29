@@ -14,10 +14,14 @@ m.libbase_android_riscv64_core_static.cflags = \
 	-Wall -Werror -Wextra -D_FILE_OFFSET_BITS=64 \
 	-target riscv64-unknown-linux-gnu \
 	-B${g.android.soong.cc.config.RISCV64GccRoot}/riscv64/bin \
-	-DANDROID_STRICT -fPIC -D_USING_LIBCXX \
+	-DANDROID_STRICT -fPIC -D_USING_LIBCXX
+
+ifeq (${CONFIG_UBSAN},y)
+m.libbase_android_riscv64_core_static.cflags += \
 	-fsanitize=integer -fsanitize-trap=all -ftrap-function=abort \
 	-fsanitize-minimal-runtime -fno-sanitize-trap=integer,undefined \
 	-fno-sanitize-recover=integer,undefined -fno-sanitize=implicit-integer-sign-change
+endif
 
 m.libbase_android_riscv64_core_static.cppflags = \
 	-std=gnu++17 \

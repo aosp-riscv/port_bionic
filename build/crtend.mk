@@ -2,7 +2,7 @@ PRJPATH = .
 
 include $(PRJPATH)/build/common.mk
 
-m.crtend_android_android_x86_core.asflags = \
+m.crtend_android_android_riscv64_core.asflags = \
 	-target riscv64-unknown-linux-gnu \
 	-B${g.android.soong.cc.config.RISCV64GccRoot}/riscv64/bin \
 	-D__ASSEMBLY__

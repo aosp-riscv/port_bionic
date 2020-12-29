@@ -11,8 +11,15 @@ chmod 666 $PATH_OUT/rootfs.img
 mkfs.ext4 $PATH_OUT/rootfs.img
 mkdir -p $PATH_OUT/rootfs
 mount -o loop $PATH_OUT/rootfs.img  $PATH_OUT/rootfs
-cd $PATH_OUT/rootfs && sudo mkdir -p bin sbin usr/bin usr/sbin proc sys dev etc etc/init.d
+cd $PATH_OUT/rootfs && sudo mkdir -p bin sbin usr/bin usr/sbin proc sys dev etc etc/init.d system/bin system/etc system/lib64 root
 cd $PATH_PRJ
+cp $PATH_OUT/lib/shared/linker64 $PATH_OUT/rootfs/system/bin/
+cp $PATH_PRJ/system/core/rootdir/etc/ld.config.txt $PATH_OUT/rootfs/system/etc/
+cp $PATH_OUT/lib/shared/libc.so $PATH_OUT/rootfs/system/lib64/
+cp $PATH_OUT/lib/shared/ld-android.so $PATH_OUT/rootfs/system/lib64/
+cp $PATH_OUT/lib/shared/libdl.so $PATH_OUT/rootfs/system/lib64/
+cp $PATH_OUT/lib/shared/libtest.so $PATH_OUT/rootfs/root/
+cp $PATH_OUT/bin/hello $PATH_OUT/rootfs/root/
 cp $PATH_OUT/bin/toybox $PATH_OUT/rootfs/bin/
 cp $PATH_OUT/bin/sh $PATH_OUT/rootfs/bin/
 CMDLIST=`/opt/qemu/bin/qemu-riscv64 out/bin/toybox --loop`

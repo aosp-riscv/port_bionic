@@ -4,6 +4,11 @@ include $(PRJPATH)/build/common.mk
 
 ######################################
 # libc_sources_shared
+#
+# Module:  libc
+# Variant: android_x86_core_shared
+# Type:    cc_library
+# Factory: android/soong/android.ModuleFactoryAdaptor.func1
 # Defined: bionic/libc/Android.bp:1528:1
 
 m.libc_android_riscv64_core_shared.cflags = \
@@ -15,12 +20,14 @@ m.libc_android_riscv64_core_shared.cflags = \
 	-target riscv64-unknown-linux-gnu \
 	-B${g.android.soong.cc.config.RISCV64GccRoot}/riscv64/bin \
 	-DANDROID_STRICT -fPIC
+
 m.libc_android_riscv64_core_shared.cppflags = \
 	-std=gnu++17 \
 	${g.android.soong.cc.config.CommonClangGlobalCppflags} \
 	${g.android.soong.cc.config.DeviceGlobalCppflags} \
 	-fno-rtti \
 	${g.android.soong.cc.config.RISCV64ClangCppflags}
+
 m.libc_android_riscv64_core_shared.asflags = \
 	-D_LIBC=1 -D__BIONIC_LP32_USE_STAT64 \
 	-Wall -Wextra -Wunused -Wno-char-subscripts -Wno-deprecated-declarations \

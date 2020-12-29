@@ -1,7 +1,5 @@
 OUTPUT_DIR = out
 
-all : toybox mksh
-
 crt: crtbegin_static crtend
 
 crtbrand :
@@ -12,6 +10,11 @@ crtbrand :
 crtbegin_static: crtbrand
 	@echo "Building $@ ..."
 	make -f build/crtbegin_static.mk
+	@echo "Building $@ DONE!"
+
+crtbegin_dynamic: crtbrand
+	@echo "Building $@ ..."
+	make -f build/crtbegin_dynamic.mk
 	@echo "Building $@ DONE!"
 
 crtend:
@@ -148,7 +151,11 @@ libc_common: libc_nopthread libc_pthread
 # libc_common_static/libc_common_shared looks like an encapsulation
 # for libc_common, just adding some extra handler for 32bit x86/arm
 libc_common_static: libc_common
+
 libc_common_shared: libc_common
+	@echo "Building $@ ..."
+	make -f build/libc_common_shared.mk
+	@echo "Building $@ DONE!"
 
 libc_init_static:
 	@echo "Building $@ ..."
@@ -178,6 +185,26 @@ libjemalloc5:
 	make -f build/libjemalloc5.mk
 	@echo "Building $@ DONE!"
 
+libdl_android_static:
+	@echo "Building $@ ..."
+	make -f build/libdl_android.mk
+	@echo "Building $@ DONE!"
+
+ld_android_shared:
+	@echo "Building $@ ..."
+	make -f build/ld_android.mk
+	@echo "Building $@ DONE!"
+
+libdl_static:
+	@echo "Building $@ ..."
+	make -f build/libdl_static.mk
+	@echo "Building $@ DONE!"
+
+libdl_shared: libdl_static ld_android_shared
+	@echo "Building $@ ..."
+	make -f build/libdl.mk
+	@echo "Building $@ DONE!"
+
 # TBD: libc_static.mk and libc_shared.mk better to merge into one
 libc_static: \
 		libc_sources_static \
@@ -192,7 +219,10 @@ libc_shared: \
 		libc_sources_shared \
 		libc_init_dynamic \
 		libc_common_shared \
-		libjemalloc5
+		libjemalloc5 \
+		libdl_android_static \
+		ld_android_shared \
+		libdl_shared
 	@echo "Building $@ ..."
 	make -f build/libc_shared.mk
 	@echo "Building $@ DONE!"
@@ -249,22 +279,54 @@ libc++abi:
 	make -f build/libcxxabi.mk
 	@echo "Building $@ DONE!"
 
-linker: libziparchive libutils libz liblinker_malloc libasync_safe libbase liblog libc++_static libc++abi libc_nomalloc
+linker: libm \
+		libziparchive \
+		libutils \
+		libz \
+		liblinker_malloc \
+		libasync_safe \
+		libbase \
+		liblog \
+		libc++_static \
+		libc++abi \
+		libc_nomalloc
 	@echo "Building $@ ..."
 	make -f build/linker.mk
 	@echo "Building $@ DONE!"
 
-test: env_setup
+libm:
+	@echo "Building $@ ..."
+	make -f build/libm.mk
+	@echo "Building $@ DONE!"
+
+libtest:
+	@echo "Building $@ ..."
+	make -f build/libtest.mk
+	@echo "Building $@ DONE!"
+
+test-e: env_setup libtest
+	@echo "Building $@ ..."
+	make -f build/test.mk EXPLICIT=yes
+	@echo "Building $@ DONE!"
+
+test-i: env_setup libtest
 	@echo "Building $@ ..."
 	make -f build/test.mk
 	@echo "Building $@ DONE!"
 
-toybox: crt libc_static
+hello: env_setup crtbegin_dynamic crtend libc_shared linker
+	@echo "Building $@ ..."
+	make -f build/libtest.mk
+	make -f build/test.mk EXPLICIT=yes
+	@echo "Building $@ DONE!"
+
+
+toybox: env_setup crtbegin_static crtend libc_static
 	@echo "Building $@ ..."
 	make -f build/toybox.mk
 	@echo "Building $@ DONE!"
 
-mksh: crt libc_static
+mksh: env_setup crtbegin_static crtend libc_static
 	@echo "Building $@ ..."
 	make -f build/mksh.mk
 	@echo "Building $@ DONE!"
@@ -275,16 +337,30 @@ clean :
 	$(RM) -rf $(OUTPUT_DIR)
 	@echo "Done, clean ALL successfully!"
 
-# env_setup will clean-up the obj folder, but not impact other output folders
+# env_setup will only clean-up the obj folder, but not impact other output folders
 # so it should be safe
 .PHONY : env_setup
 env_setup:
 	rm -rf $(OUTPUT_DIR)/obj
 	mkdir -p $(OUTPUT_DIR)/obj
-	mkdir -p $(OUTPUT_DIR)/lib
 	mkdir -p $(OUTPUT_DIR)/lib/static
-	mkdir -p $(OUTPUT_DIR)/bin
+	mkdir -p $(OUTPUT_DIR)/lib/shared
 	mkdir -p $(OUTPUT_DIR)/bin/unstripped
-	@echo "Setup enviroment."
+	@echo "Enviroment is ready."
 
 
+.PHONY : debug
+debug:
+	rm -f log
+	qemu-riscv64 -L ./out -E LD_DEBUG=3 -g 1234 ./out/bin/unstripped/hello > log
+
+# to see log on stdout, set LINKER_DEBUG_TO_LOG to zero in bionic/linker/linker_debug.h
+# set LD_DEBUG=2 to open all print/info/trace
+# set LD_DEBUG=3 to open all debug log
+#	qemu-riscv64 -L ./out -E LD_DEBUG=3 ./out/bin/unstripped/hello
+.PHONY : run
+run:
+	qemu-riscv64 -L ./out -E LD_LIBRARY_PATH=./out/lib/shared ./out/bin/unstripped/hello
+
+.DEFAULT_GOAL := all
+all : toybox mksh hello

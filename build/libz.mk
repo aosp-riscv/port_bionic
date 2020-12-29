@@ -59,3 +59,4 @@ all : $(OBJS)
 	@if [ ! -e $(LIB_DIR)/static ]; then mkdir -p $(LIB_DIR)/static; fi
 	@echo $(OUTPUT_OBJS) >> $(LIB_DIR)/static/libz.a.rsp
 	llvm-ar crsD -format=gnu $(LIB_DIR)/static/libz.a @${LIB_DIR}/static/libz.a.rsp
+	@echo DONE!
